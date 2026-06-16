@@ -1,0 +1,22 @@
+{
+  "name": "ハワイ社員旅行 2026",
+  "short_name": "ハワイ旅行",
+  "description": "2026年9月 ハワイ社員旅行プランナー",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d9488",
+  "theme_color": "#0d9488",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
