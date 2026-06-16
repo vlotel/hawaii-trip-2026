@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ハワイ社員旅行 2026.09</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <button id="theme-toggle" class="theme-toggle" aria-label="表示テーマ切替">🌙</button>
+  <h1>🌴 ハワイ社員旅行 <span class="period">2026.09.07-11</span></h1>
+  <div id="countdown" class="countdown"></div>
+</header>
+
+<nav id="tabs">
+  <button class="tab-btn active" data-tab="itinerary">行程表</button>
+  <button class="tab-btn" data-tab="budget">予算管理</button>
+  <button class="tab-btn" data-tab="packing">持ち物</button>
+  <button class="tab-btn" data-tab="drive">ドライブ</button>
+  <button class="tab-btn" data-tab="notes">メモ・候補地</button>
+</nav>
+
+<main>
+  <!-- 行程表 -->
+  <section id="itinerary" class="tab-panel active">
+    <div id="trip-overview" class="card"></div>
+    <div id="itinerary-list"></div>
+    <div id="summary-card" class="card"></div>
+  </section>
+
+  <!-- 予算管理 -->
+  <section id="budget" class="tab-panel">
+    <div class="card">
+      <h2>個人負担になりそうな費用</h2>
+      <p class="muted">往復航空券・宿泊・1日目市内観光・ウェルカムパーティー・さよならパーティー(本体)は会社主催ツアー代金に含まれます。以下は個人で発生しそうな費用の見積もりです。</p>
+      <div id="budget-table"></div>
+      <div id="budget-total" class="total-row"></div>
+    </div>
+  </section>
+
+  <!-- 持ち物リスト -->
+  <section id="packing" class="tab-panel">
+    <div class="card">
+      <div class="packing-header">
+        <h2>持ち物チェックリスト</h2>
+        <span id="packing-progress"></span>
+      </div>
+      <div id="packing-list"></div>
+      <div class="packing-add-form">
+        <h3>アイテムを追加</h3>
+        <input type="text" id="packing-add-text" placeholder="持ち物の名前" maxlength="40">
+        <div class="packing-add-row">
+          <select id="packing-add-category"></select>
+          <input type="text" id="packing-add-newcategory" placeholder="新しいカテゴリ名" maxlength="20" style="display:none">
+          <button id="packing-add-btn">追加</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ドライブ -->
+  <section id="drive" class="tab-panel">
+    <div class="card">
+      <h2>2日目: オアフ島一周ドライブ 立ち寄り候補</h2>
+      <p class="muted">ワイキキを起点に時計回り(東部 → ウィンドワード → ノースショア → 中央部)の順で並べています。気になる場所を「行く」にチェックすると下の「選択中のスポット」にまとまります。立ち寄りなしで一周3〜4時間、観光を挟むと6時間以上が目安です。</p>
+      <div class="drive-controls">
+        <label><input type="checkbox" id="drive-filter"> 選択中のスポットのみ表示</label>
+      </div>
+    </div>
+    <div id="drive-selected" class="card" style="display:none;">
+      <h2>選択中のスポット(訪問順メモ)</h2>
+      <ol id="drive-selected-list"></ol>
+    </div>
+    <div id="drive-map"></div>
+    <div id="drive-map-summary" class="drive-map-summary"></div>
+    <div id="drive-list"></div>
+  </section>
+
+  <!-- メモ・候補地 -->
+  <section id="notes" class="tab-panel">
+    <div class="card">
+      <h2>検討事項・TODO</h2>
+      <div id="todo-list"></div>
+    </div>
+    <div class="card">
+      <h2>ホテル情報</h2>
+      <div id="hotel-info"></div>
+    </div>
+    <div class="card">
+      <h2>観光・候補地メモ</h2>
+      <div id="spots-list"></div>
+    </div>
+    <div class="card">
+      <h2>出典</h2>
+      <ul id="sources-list" class="muted"></ul>
+    </div>
+  </section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

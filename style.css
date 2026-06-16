@@ -1,0 +1,610 @@
+:root {
+  --primary: #0d9488;
+  --primary-dark: #0f766e;
+  --accent: #f97316;
+  --bg: #f7f7f5;
+  --card-bg: #ffffff;
+  --border: #e5e7eb;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --table-head: #f0fdfa;
+  --row-divider: #f3f4f6;
+}
+
+body.dark {
+  --primary: #2dd4bf;
+  --primary-dark: #5eead4;
+  --accent: #fb923c;
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --border: #334155;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --table-head: #134e4a;
+  --row-divider: #334155;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input[type="text"], select, textarea {
+  background: var(--card-bg);
+  color: var(--text);
+}
+
+body.dark .drive-map-summary,
+body.dark .card,
+body.dark .day-card,
+body.dark .drive-spot {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: 40px;
+  transition: background 0.25s, color 0.25s;
+}
+
+header {
+  position: relative;
+  background: linear-gradient(135deg, #0d9488, #0f766e);
+  color: white;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+body.dark header {
+  background: linear-gradient(135deg, #0f766e, #155e63);
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.countdown {
+  margin-top: 8px;
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+header .period {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: normal;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+#tabs {
+  display: flex;
+  position: sticky;
+  top: 0;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: var(--muted);
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  color: var(--primary-dark);
+  border-bottom-color: var(--primary);
+  font-weight: bold;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: var(--primary-dark);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* 行程表 */
+.day-card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--primary);
+}
+
+.day-card h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  color: var(--primary-dark);
+}
+
+.day-card .date-badge {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.85rem;
+  margin-right: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+
+table th, table td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+table th {
+  background: var(--table-head);
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.status-done {
+  color: var(--primary-dark);
+  font-weight: bold;
+}
+
+.status-undecided {
+  color: var(--accent);
+}
+
+.day-meta {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.free-text-list, .extra-notes {
+  margin: 8px 0;
+  padding-left: 1.2em;
+  font-size: 0.9rem;
+}
+
+/* 予算管理 */
+#budget-table table {
+  font-size: 0.85rem;
+}
+
+#budget-table input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+#budget-table select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 2px;
+  font-size: 0.85rem;
+}
+
+.total-row {
+  margin-top: 12px;
+  font-weight: bold;
+  text-align: right;
+}
+
+/* 持ち物リスト */
+.packing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#packing-progress {
+  font-size: 0.9rem;
+  color: var(--primary-dark);
+  font-weight: bold;
+}
+
+.packing-category {
+  margin-bottom: 12px;
+}
+
+.packing-category h3 {
+  font-size: 0.95rem;
+  margin: 12px 0 6px;
+  color: var(--primary-dark);
+}
+
+.packing-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--row-divider);
+}
+
+.packing-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.packing-item label {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.packing-item.checked label {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.packing-delete {
+  margin-left: auto;
+  padding: 0 6px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.packing-delete:hover {
+  color: #ef4444;
+}
+
+.custom-category-badge {
+  font-size: 0.7rem;
+  background: var(--accent);
+  color: white;
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: middle;
+  font-weight: normal;
+}
+
+.packing-add-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.packing-add-form h3 {
+  font-size: 0.9rem;
+  color: var(--primary-dark);
+  margin: 0 0 8px;
+}
+
+.packing-add-form input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.packing-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.packing-add-row select {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 8px;
+  font-size: 0.9rem;
+}
+
+#packing-add-newcategory {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+#packing-add-btn {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#packing-add-btn:active {
+  background: var(--primary-dark);
+}
+
+/* ドライブ */
+#drive-map {
+  height: 320px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.drive-marker-icon {
+  background: #0d9488;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.drive-marker-icon.selected {
+  background: #f97316;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: bold;
+}
+
+.drive-start-icon {
+  font-size: 20px;
+  line-height: 24px;
+  text-align: center;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+.drive-map-summary {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--accent);
+}
+
+.drive-popup h4 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+}
+
+.drive-popup p {
+  margin: 4px 0;
+  font-size: 0.85rem;
+}
+
+.drive-popup a {
+  color: var(--primary-dark);
+  font-size: 0.85rem;
+}
+
+.popup-toggle {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  padding: 6px 8px;
+  border: 1px solid #f97316;
+  border-radius: 6px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.popup-toggle.on {
+  background: #f97316;
+  color: white;
+}
+
+.drive-controls {
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.drive-area-heading {
+  margin: 16px 4px 8px;
+  font-size: 0.95rem;
+  color: var(--primary-dark);
+}
+
+.drive-spot {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--border);
+}
+
+.drive-spot.selected {
+  border-left-color: var(--accent);
+}
+
+.drive-spot-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.drive-spot-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.drive-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.drive-checkbox input {
+  width: 18px;
+  height: 18px;
+}
+
+.maps-link {
+  font-size: 0.8rem;
+  color: var(--primary-dark);
+  text-decoration: none;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.drive-desc {
+  font-size: 0.88rem;
+  color: var(--text);
+  margin: 8px 0;
+}
+
+.drive-memo {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+#drive-selected-list {
+  font-size: 0.9rem;
+  padding-left: 1.2em;
+}
+
+/* メモ・候補地 */
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--row-divider);
+}
+
+.todo-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.todo-item label {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.todo-item.checked label {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.spot {
+  margin-bottom: 12px;
+}
+
+.spot h3 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+}
+
+.spot p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+#hotel-info ul, #sources-list {
+  padding-left: 1.2em;
+  font-size: 0.88rem;
+}
+
+#sources-list li {
+  word-break: break-all;
+}
