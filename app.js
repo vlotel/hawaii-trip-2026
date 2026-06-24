@@ -21,6 +21,8 @@ let state = {
   budget: {},
   drive: {},
   customPacking: [],
+  packingDeleted: [],   // 削除済みの既定項目id
+  packingText: {},      // 項目id → 編集後の文言(上書き)
   theme: localStorage.getItem("hawaii-theme") || "light",
 };
 
@@ -35,6 +37,8 @@ function saveState(s) {
     budget: s.budget || {},
     drive: s.drive || {},
     customPacking: s.customPacking || [],
+    packingDeleted: s.packingDeleted || [],
+    packingText: s.packingText || {},
     theme: s.theme || "light",
   }).catch((e) => console.warn("Firestore保存エラー:", e));
 }
@@ -214,13 +218,36 @@ function renderBudgetTotal() {
 }
 
 // ---------- 持ち物リスト ----------
-function packingItemHtml(id, text, deletable) {
+// 編集中の項目id(永続化しない一時状態)
+let editingPackingId = null;
+
+function escAttr(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+}
+
+// 項目の表示テキスト(編集による上書きがあればそれを優先)
+function getPackingText(id, fallback) {
+  return state.packingText[id] !== undefined ? state.packingText[id] : fallback;
+}
+
+function packingItemHtml(id, fallbackText) {
+  const text = getPackingText(id, fallbackText);
+  if (editingPackingId === id) {
+    return `
+      <div class="packing-item editing">
+        <input type="text" class="packing-edit-input" data-id="${id}" value="${escAttr(text)}" maxlength="60">
+        <button class="packing-edit-save" data-id="${id}">保存</button>
+        <button class="packing-edit-cancel" data-id="${id}">取消</button>
+      </div>
+    `;
+  }
   const isChecked = !!state.packing[id];
   return `
     <div class="packing-item ${isChecked ? "checked" : ""}">
       <input type="checkbox" id="pack-${id}" data-id="${id}" ${isChecked ? "checked" : ""}>
       <label for="pack-${id}">${text}</label>
-      ${deletable ? `<button class="packing-delete" data-id="${id}" aria-label="削除">✕</button>` : ""}
+      <button class="packing-edit" data-id="${id}" aria-label="編集">✏️</button>
+      <button class="packing-delete" data-id="${id}" aria-label="削除">✕</button>
     </div>
   `;
 }
@@ -231,6 +258,11 @@ function renderPacking() {
   let total = 0;
   let checked = 0;
 
+  const countItem = (id) => {
+    total++;
+    if (state.packing[id]) checked++;
+  };
+
   // カテゴリ別にカスタムアイテムをまとめる
   const customByCategory = {};
   state.customPacking.forEach((item) => {
@@ -239,34 +271,31 @@ function renderPacking() {
 
   // 既定カテゴリ
   Object.entries(PACKING_LIST).forEach(([category, items]) => {
-    html += `<div class="packing-category"><h3>${category}</h3>`;
+    let body = "";
     items.forEach((item) => {
-      const isChecked = !!state.packing[item.id];
-      total++;
-      if (isChecked) checked++;
-      html += packingItemHtml(item.id, item.text, false);
+      if (state.packingDeleted.includes(item.id)) return; // 削除済みの既定項目はスキップ
+      countItem(item.id);
+      body += packingItemHtml(item.id, item.text);
     });
     // 同カテゴリのカスタムアイテム
     (customByCategory[category] || []).forEach((item) => {
-      const isChecked = !!state.packing[item.id];
-      total++;
-      if (isChecked) checked++;
-      html += packingItemHtml(item.id, item.text, true);
+      countItem(item.id);
+      body += packingItemHtml(item.id, item.text);
     });
     delete customByCategory[category];
-    html += `</div>`;
+    if (body) html += `<div class="packing-category"><h3>${category}</h3>${body}</div>`;
   });
 
   // 既定にないカテゴリ(新規カテゴリ)
   Object.entries(customByCategory).forEach(([category, items]) => {
-    html += `<div class="packing-category"><h3>${category} <span class="custom-category-badge">追加</span></h3>`;
+    let body = "";
     items.forEach((item) => {
-      const isChecked = !!state.packing[item.id];
-      total++;
-      if (isChecked) checked++;
-      html += packingItemHtml(item.id, item.text, true);
+      countItem(item.id);
+      body += packingItemHtml(item.id, item.text);
     });
-    html += `</div>`;
+    if (body) {
+      html += `<div class="packing-category"><h3>${category} <span class="custom-category-badge">追加</span></h3>${body}</div>`;
+    }
   });
 
   el.innerHTML = html;
@@ -280,13 +309,60 @@ function renderPacking() {
     });
   });
 
+  // 削除(既定項目は packingDeleted に記録、カスタム項目は customPacking から除去)
   el.querySelectorAll(".packing-delete").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      const id = e.target.dataset.id;
-      state.customPacking = state.customPacking.filter((i) => i.id !== id);
+      const id = e.currentTarget.dataset.id;
+      if (state.customPacking.some((i) => i.id === id)) {
+        state.customPacking = state.customPacking.filter((i) => i.id !== id);
+      } else if (!state.packingDeleted.includes(id)) {
+        state.packingDeleted.push(id);
+      }
       delete state.packing[id];
+      delete state.packingText[id];
       saveState(state);
       renderPacking();
+    });
+  });
+
+  // 編集開始
+  el.querySelectorAll(".packing-edit").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      editingPackingId = e.currentTarget.dataset.id;
+      renderPacking();
+      const input = el.querySelector(".packing-edit-input");
+      if (input) { input.focus(); input.select(); }
+    });
+  });
+
+  // 編集の保存・取消
+  const saveEdit = (id, value) => {
+    const text = value.trim();
+    if (text) {
+      state.packingText[id] = text;
+      saveState(state);
+    }
+    editingPackingId = null;
+    renderPacking();
+  };
+  const cancelEdit = () => {
+    editingPackingId = null;
+    renderPacking();
+  };
+  el.querySelectorAll(".packing-edit-save").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const id = e.currentTarget.dataset.id;
+      const input = el.querySelector(`.packing-edit-input[data-id="${id}"]`);
+      saveEdit(id, input ? input.value : "");
+    });
+  });
+  el.querySelectorAll(".packing-edit-cancel").forEach((btn) => {
+    btn.addEventListener("click", cancelEdit);
+  });
+  el.querySelectorAll(".packing-edit-input").forEach((input) => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); saveEdit(input.dataset.id, input.value); }
+      if (e.key === "Escape") cancelEdit();
     });
   });
 }
@@ -676,6 +752,8 @@ onSnapshot(TRIP_DOC, (snap) => {
   state.budget = d.budget || {};
   state.drive = d.drive || {};
   state.customPacking = d.customPacking || [];
+  state.packingDeleted = d.packingDeleted || [];
+  state.packingText = d.packingText || {};
   if (d.theme && d.theme !== state.theme) {
     state.theme = d.theme;
     applyTheme(d.theme);

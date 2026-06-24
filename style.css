@@ -305,8 +305,8 @@ table th {
   color: var(--muted);
 }
 
+.packing-edit,
 .packing-delete {
-  margin-left: auto;
   padding: 0 6px;
   border: none;
   background: none;
@@ -317,8 +317,51 @@ table th {
   flex-shrink: 0;
 }
 
+.packing-edit {
+  margin-left: auto;
+}
+
+.packing-edit:hover {
+  color: var(--primary);
+}
+
 .packing-delete:hover {
   color: #ef4444;
+}
+
+/* 項目のインライン編集 */
+.packing-item.editing {
+  gap: 6px;
+}
+
+.packing-edit-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+}
+
+.packing-edit-save,
+.packing-edit-cancel {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+
+.packing-edit-save {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.packing-edit-cancel {
+  background: none;
+  color: var(--muted);
 }
 
 .custom-category-badge {
