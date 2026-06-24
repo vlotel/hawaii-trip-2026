@@ -23,6 +23,7 @@ let state = {
   customPacking: [],
   packingDeleted: [],   // 削除済みの既定項目id
   packingText: {},      // 項目id → 編集後の文言(上書き)
+  packingOrder: {},     // カテゴリ名 → 項目idの並び順
   theme: localStorage.getItem("hawaii-theme") || "light",
 };
 
@@ -39,6 +40,7 @@ function saveState(s) {
     customPacking: s.customPacking || [],
     packingDeleted: s.packingDeleted || [],
     packingText: s.packingText || {},
+    packingOrder: s.packingOrder || {},
     theme: s.theme || "light",
   }).catch((e) => console.warn("Firestore保存エラー:", e));
 }
@@ -218,8 +220,10 @@ function renderBudgetTotal() {
 }
 
 // ---------- 持ち物リスト ----------
-// 編集中の項目id(永続化しない一時状態)
+// 編集中の項目id / 編集モード表示(いずれも永続化しない一時状態)
 let editingPackingId = null;
+let packingEditMode = false;
+let packingSortables = [];
 
 function escAttr(s) {
   return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
@@ -230,11 +234,28 @@ function getPackingText(id, fallback) {
   return state.packingText[id] !== undefined ? state.packingText[id] : fallback;
 }
 
+// カテゴリ内の項目を保存済みの並び順に並べ替える(順序未登録の新規項目は末尾)
+function orderedCategoryItems(category, defaultItems, customItems) {
+  const all = [
+    ...defaultItems.filter((it) => !state.packingDeleted.includes(it.id)),
+    ...customItems,
+  ];
+  const order = state.packingOrder[category];
+  if (!order || !order.length) return all;
+  const byId = new Map(all.map((it) => [it.id, it]));
+  const result = [];
+  order.forEach((id) => {
+    if (byId.has(id)) { result.push(byId.get(id)); byId.delete(id); }
+  });
+  byId.forEach((it) => result.push(it)); // 並び順に無い項目は元の順で末尾へ
+  return result;
+}
+
 function packingItemHtml(id, fallbackText) {
   const text = getPackingText(id, fallbackText);
   if (editingPackingId === id) {
     return `
-      <div class="packing-item editing">
+      <div class="packing-item editing" data-id="${id}">
         <input type="text" class="packing-edit-input" data-id="${id}" value="${escAttr(text)}" maxlength="60">
         <button class="packing-edit-save" data-id="${id}">保存</button>
         <button class="packing-edit-cancel" data-id="${id}">取消</button>
@@ -243,7 +264,8 @@ function packingItemHtml(id, fallbackText) {
   }
   const isChecked = !!state.packing[id];
   return `
-    <div class="packing-item ${isChecked ? "checked" : ""}">
+    <div class="packing-item ${isChecked ? "checked" : ""}" data-id="${id}">
+      <span class="packing-drag" aria-label="並べ替え" title="ドラッグで並べ替え">⠿</span>
       <input type="checkbox" id="pack-${id}" data-id="${id}" ${isChecked ? "checked" : ""}>
       <label for="pack-${id}">${text}</label>
       <button class="packing-edit" data-id="${id}" aria-label="編集">✏️</button>
@@ -252,8 +274,34 @@ function packingItemHtml(id, fallbackText) {
   `;
 }
 
+// カテゴリ内の項目をドラッグで並べ替え可能にする(編集モード時のみ)
+function initPackingSortable() {
+  packingSortables.forEach((s) => s.destroy());
+  packingSortables = [];
+  if (!window.Sortable) return;
+  document.querySelectorAll("#packing-list .packing-items").forEach((container) => {
+    const category = container.dataset.category;
+    packingSortables.push(Sortable.create(container, {
+      handle: ".packing-drag",
+      animation: 150,
+      onEnd: () => {
+        const ids = [...container.querySelectorAll(".packing-item")].map((el) => el.dataset.id);
+        state.packingOrder[category] = ids;
+        saveState(state);
+      },
+    }));
+  });
+}
+
 function renderPacking() {
   const el = document.getElementById("packing-list");
+  el.classList.toggle("edit-mode", packingEditMode);
+  const modeBtn = document.getElementById("packing-edit-mode-btn");
+  if (modeBtn) {
+    modeBtn.textContent = packingEditMode ? "完了" : "編集";
+    modeBtn.classList.toggle("active", packingEditMode);
+  }
+
   let html = "";
   let total = 0;
   let checked = 0;
@@ -269,33 +317,30 @@ function renderPacking() {
     (customByCategory[item.category] = customByCategory[item.category] || []).push(item);
   });
 
-  // 既定カテゴリ
-  Object.entries(PACKING_LIST).forEach(([category, items]) => {
+  // 1カテゴリ分のHTMLを生成(badge=true で「追加」バッジ付き)
+  const renderCategory = (category, defaultItems, badge) => {
+    const items = orderedCategoryItems(category, defaultItems, customByCategory[category] || []);
+    if (!items.length) return "";
     let body = "";
     items.forEach((item) => {
-      if (state.packingDeleted.includes(item.id)) return; // 削除済みの既定項目はスキップ
       countItem(item.id);
       body += packingItemHtml(item.id, item.text);
     });
-    // 同カテゴリのカスタムアイテム
-    (customByCategory[category] || []).forEach((item) => {
-      countItem(item.id);
-      body += packingItemHtml(item.id, item.text);
-    });
+    return `<div class="packing-category">
+      <h3>${category}${badge ? ` <span class="custom-category-badge">追加</span>` : ""}</h3>
+      <div class="packing-items" data-category="${escAttr(category)}">${body}</div>
+    </div>`;
+  };
+
+  // 既定カテゴリ
+  Object.entries(PACKING_LIST).forEach(([category, items]) => {
+    html += renderCategory(category, items, false);
     delete customByCategory[category];
-    if (body) html += `<div class="packing-category"><h3>${category}</h3>${body}</div>`;
   });
 
   // 既定にないカテゴリ(新規カテゴリ)
-  Object.entries(customByCategory).forEach(([category, items]) => {
-    let body = "";
-    items.forEach((item) => {
-      countItem(item.id);
-      body += packingItemHtml(item.id, item.text);
-    });
-    if (body) {
-      html += `<div class="packing-category"><h3>${category} <span class="custom-category-badge">追加</span></h3>${body}</div>`;
-    }
+  Object.keys(customByCategory).forEach((category) => {
+    html += renderCategory(category, [], true);
   });
 
   el.innerHTML = html;
@@ -365,6 +410,14 @@ function renderPacking() {
       if (e.key === "Escape") cancelEdit();
     });
   });
+
+  // 並べ替え(編集モード時のみ有効化)
+  if (packingEditMode) {
+    initPackingSortable();
+  } else {
+    packingSortables.forEach((s) => s.destroy());
+    packingSortables = [];
+  }
 }
 
 function addCustomPackingItem(text, category) {
@@ -420,6 +473,16 @@ function initPackingAddForm() {
   textEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") btn.click();
   });
+
+  // 編集モード(削除・編集・並べ替えハンドルの表示/非表示)切替
+  const modeBtn = document.getElementById("packing-edit-mode-btn");
+  if (modeBtn) {
+    modeBtn.addEventListener("click", () => {
+      packingEditMode = !packingEditMode;
+      if (!packingEditMode) editingPackingId = null; // 編集モードを抜けたら個別編集も終了
+      renderPacking();
+    });
+  }
 
   refreshCategories();
 }
@@ -754,6 +817,7 @@ onSnapshot(TRIP_DOC, (snap) => {
   state.customPacking = d.customPacking || [];
   state.packingDeleted = d.packingDeleted || [];
   state.packingText = d.packingText || {};
+  state.packingOrder = d.packingOrder || {};
   if (d.theme && d.theme !== state.theme) {
     state.theme = d.theme;
     applyTheme(d.theme);

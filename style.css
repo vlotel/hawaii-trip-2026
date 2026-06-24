@@ -307,6 +307,7 @@ table th {
 
 .packing-edit,
 .packing-delete {
+  display: none;            /* 通常は非表示。編集モード時のみ表示 */
   padding: 0 6px;
   border: none;
   background: none;
@@ -327,6 +328,63 @@ table th {
 
 .packing-delete:hover {
   color: #ef4444;
+}
+
+/* 並べ替えハンドル(編集モード時のみ表示) */
+.packing-drag {
+  display: none;
+  margin-right: 8px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: grab;
+  flex-shrink: 0;
+  touch-action: none;       /* タッチでのスクロールと競合させない */
+  user-select: none;
+}
+
+.packing-drag:active {
+  cursor: grabbing;
+}
+
+/* 編集モードのときだけ各操作を表示 */
+#packing-list.edit-mode .packing-edit,
+#packing-list.edit-mode .packing-delete,
+#packing-list.edit-mode .packing-drag {
+  display: inline-block;
+}
+
+/* ドラッグ中のプレースホルダ(SortableJSのデフォルトクラス) */
+.packing-item.sortable-ghost {
+  opacity: 0.4;
+}
+
+.packing-item.sortable-chosen {
+  background: var(--row-divider);
+}
+
+/* 編集モード切替ボタン */
+.packing-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.packing-mode-btn {
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--primary-dark);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.packing-mode-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 /* 項目のインライン編集 */
