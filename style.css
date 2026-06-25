@@ -709,3 +709,55 @@ table th {
 #sources-list li {
   word-break: break-all;
 }
+
+/* クレジットカード付帯保険 */
+.insurance-card {
+  margin: 14px 0;
+}
+
+.insurance-card h3 {
+  font-size: 0.92rem;
+  margin: 0 0 6px;
+  color: var(--primary-dark);
+}
+
+.insurance-attach {
+  font-size: 0.7rem;
+  background: var(--accent);
+  color: white;
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: middle;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.insurance-table td {
+  font-size: 0.85rem;
+}
+
+.insurance-table td:first-child {
+  color: var(--muted);
+  white-space: nowrap;
+  width: 40%;
+}
+
+.insurance-extra {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.insurance-trip {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--row-divider);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.insurance-disclaimer {
+  font-size: 0.78rem;
+  margin-top: 10px;
+}

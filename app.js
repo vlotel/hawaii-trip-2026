@@ -718,6 +718,27 @@ function renderTodo() {
   });
 }
 
+function renderInsurance() {
+  const el = document.getElementById("insurance-info");
+  if (!el) return;
+  el.innerHTML = `
+    <p class="muted">${INSURANCE_INFO.note}</p>
+    ${INSURANCE_INFO.cards.map((c) => `
+      <div class="insurance-card">
+        <h3>${c.name} <span class="insurance-attach">${c.attach}</span></h3>
+        <table class="insurance-table">
+          <tbody>
+            ${c.rows.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}
+          </tbody>
+        </table>
+        <p class="muted insurance-extra">${c.extra}</p>
+      </div>
+    `).join("")}
+    <div class="insurance-trip"><strong>このハワイ旅行では:</strong> ${INSURANCE_INFO.forThisTrip}</div>
+    <p class="muted insurance-disclaimer">※${INSURANCE_INFO.disclaimer}</p>
+  `;
+}
+
 function renderHotelInfo() {
   const el = document.getElementById("hotel-info");
   el.innerHTML = `
@@ -794,6 +815,7 @@ function renderAll() {
   renderPacking();
   renderDrive();
   renderTodo();
+  renderInsurance();
   renderHotelInfo();
   renderSpots();
   renderSources();
