@@ -605,7 +605,7 @@ function renderDriveMap() {
     marker.bindPopup(`
       <div class="drive-popup">
         <h4>${order ? order + ". " : ""}${spot.name}</h4>
-        <p class="muted">${spot.area}</p>
+        <p class="muted">${spot.area} ・ 滞在目安 ${spot.stayMin ?? 40}分</p>
         <p>${spot.desc}</p>
         <button class="popup-toggle ${ds.selected ? "on" : ""}" onclick="toggleDriveSpot('${spot.id}')">
           ${ds.selected ? "✓ 行く(選択中)" : "+ 行くに追加"}
@@ -634,10 +634,10 @@ function renderDriveSummaryBar(selectedSpots) {
   for (let i = 0; i < points.length - 1; i++) {
     km += haversineKm(points[i], points[i + 1]);
   }
-  // 直線距離→実走行距離は1.3倍程度、平均速度45km/h、各立寄り40分で概算
+  // 直線距離→実走行距離は1.3倍程度、平均速度45km/hで概算。滞在時間は各スポットの stayMin を合計
   const roadKm = km * 1.3;
   const driveMin = (roadKm / 45) * 60;
-  const stopMin = selectedSpots.length * 40;
+  const stopMin = selectedSpots.reduce((sum, spot) => sum + (spot.stayMin ?? 40), 0);
   const totalMin = driveMin + stopMin;
   const fmt = (m) => `${Math.floor(m / 60)}時間${Math.round(m % 60)}分`;
   el.innerHTML = `
@@ -646,7 +646,7 @@ function renderDriveSummaryBar(selectedSpots) {
     ／ 運転 約${fmt(driveMin)}
     ＋ 各所滞在 約${fmt(stopMin)}
     = <strong>合計 約${fmt(totalMin)}</strong>
-    <span class="muted">(直線距離からの粗い目安。1箇所40分滞在で試算)</span>
+    <span class="muted">(直線距離からの粗い目安。滞在時間は各スポットごとの目安値を合計)</span>
   `;
 }
 
@@ -706,6 +706,7 @@ function renderDrive() {
             行く
           </label>
           <h3>${spot.name}</h3>
+          <span class="muted drive-staymin">滞在目安 ${spot.stayMin ?? 40}分</span>
           <a class="maps-link" href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
           <button class="drive-delete" data-id="${spot.id}" aria-label="この候補を削除">✕</button>
         </div>

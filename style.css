@@ -724,6 +724,11 @@ table th {
   height: 18px;
 }
 
+.drive-staymin {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
 .maps-link {
   font-size: 0.8rem;
   color: var(--primary-dark);
