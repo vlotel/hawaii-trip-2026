@@ -269,23 +269,19 @@ function packingItemHtml(id, fallbackText) {
   return `
     <div class="packing-item ${packed ? "checked" : ""}" data-id="${id}">
       <span class="packing-drag" aria-label="並べ替え" title="ドラッグで並べ替え">⠿</span>
-      <div class="packing-main">
-        <div class="packing-row1">
-          <span class="packing-label">${text}</span>
-          <button class="packing-edit" data-id="${id}" aria-label="編集">✏️</button>
-          <button class="packing-delete" data-id="${id}" aria-label="削除">✕</button>
-        </div>
-        <div class="pack-toggles">
-          <label class="pack-toggle bought ${bought ? "on" : ""}">
-            <input type="checkbox" data-id="${id}" data-kind="bought" ${bought ? "checked" : ""}>
-            <span>🛒 買い物済み</span>
-          </label>
-          <label class="pack-toggle packed ${packed ? "on" : ""}">
-            <input type="checkbox" data-id="${id}" data-kind="packed" ${packed ? "checked" : ""}>
-            <span>🎒 パッキング済み</span>
-          </label>
-        </div>
-      </div>
+      <span class="packing-label">${text}</span>
+      <span class="pack-checks">
+        <label class="pack-check" title="買い物済み">
+          <span class="pack-icon">🛒</span>
+          <input type="checkbox" class="chk-bought" data-id="${id}" data-kind="bought" ${bought ? "checked" : ""}>
+        </label>
+        <label class="pack-check" title="パッキング済み">
+          <span class="pack-icon">🎒</span>
+          <input type="checkbox" class="chk-packed" data-id="${id}" data-kind="packed" ${packed ? "checked" : ""}>
+        </label>
+      </span>
+      <button class="packing-edit" data-id="${id}" aria-label="編集">✏️</button>
+      <button class="packing-delete" data-id="${id}" aria-label="削除">✕</button>
     </div>
   `;
 }
@@ -365,7 +361,7 @@ function renderPacking() {
   document.getElementById("packing-progress").textContent =
     `🛒 ${boughtCount}/${total} ・ 🎒 ${packedCount}/${total}`;
 
-  el.querySelectorAll('.pack-toggle input[type="checkbox"]').forEach((cb) => {
+  el.querySelectorAll('.pack-checks input[type="checkbox"]').forEach((cb) => {
     cb.addEventListener("change", (e) => {
       const id = e.target.dataset.id;
       if (e.target.dataset.kind === "bought") {

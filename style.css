@@ -286,24 +286,13 @@ table th {
 
 .packing-item {
   display: flex;
-  align-items: flex-start;
-  padding: 8px 0;
+  align-items: center;
+  padding: 7px 0;
   border-bottom: 1px solid var(--row-divider);
 }
 
 .packing-item.editing {
-  align-items: center;
   gap: 6px;
-}
-
-.packing-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.packing-row1 {
-  display: flex;
-  align-items: center;
 }
 
 .packing-label {
@@ -318,44 +307,43 @@ table th {
   color: var(--muted);
 }
 
-/* 2種類のチェック(🛒買い物済み / 🎒パッキング済み) */
-.pack-toggles {
+/* 2種類のチェック(🛒買い物済み / 🎒パッキング済み)。文字は出さずアイコンのみ */
+.pack-checks {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  margin-left: 10px;
 }
 
-.pack-toggle {
+.pack-check {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.pack-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.pack-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pack-check input.chk-bought { accent-color: #f59e0b; }
+.pack-check input.chk-packed { accent-color: var(--primary); }
+
+/* 凡例(1回だけ表示) */
+.packing-legend {
   font-size: 0.78rem;
   color: var(--muted);
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-}
-
-.pack-toggle input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.pack-toggle.bought.on {
-  background: #f59e0b;
-  border-color: #f59e0b;
-  color: #fff;
-}
-
-.pack-toggle.packed.on {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
+  margin: 0 0 10px;
 }
 
 .packing-edit,
@@ -387,7 +375,6 @@ table th {
 .packing-drag {
   display: none;
   margin-right: 8px;
-  margin-top: 2px;          /* 1行目(項目名)の高さに合わせる */
   color: var(--muted);
   font-size: 1.1rem;
   line-height: 1;
