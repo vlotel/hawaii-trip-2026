@@ -618,9 +618,65 @@ table th {
   color: white;
 }
 
+.drive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.drive-header h2 {
+  margin: 0;
+}
+
 .drive-controls {
   margin-top: 8px;
   font-size: 0.9rem;
+}
+
+/* 候補の削除ボタン(編集モード時のみ表示) */
+.drive-delete {
+  display: none;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+.drive-delete:hover {
+  color: #ef4444;
+}
+
+#drive-list.edit-mode .drive-delete {
+  display: inline-block;
+}
+
+/* 非表示にした候補の復元エリア(編集モード時のみ表示) */
+.drive-restore {
+  margin: 10px 4px 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.85rem;
+  line-height: 1.9;
+}
+
+.drive-restore-btn {
+  margin: 0 6px 4px 0;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--primary-dark);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.drive-restore-btn:hover {
+  border-color: var(--primary);
 }
 
 .drive-area-heading {

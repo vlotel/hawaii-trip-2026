@@ -20,6 +20,7 @@ let state = {
   todo: {},
   budget: {},
   drive: {},
+  driveDeleted: [],     // 非表示にした既定ドライブ候補のid
   customPacking: [],
   packingDeleted: [],   // 削除済みの既定項目id
   packingText: {},      // 項目id → 編集後の文言(上書き)
@@ -38,6 +39,7 @@ function saveState(s) {
     todo: s.todo || {},
     budget: s.budget || {},
     drive: s.drive || {},
+    driveDeleted: s.driveDeleted || [],
     customPacking: s.customPacking || [],
     packingDeleted: s.packingDeleted || [],
     packingText: s.packingText || {},
@@ -526,6 +528,12 @@ function setDriveState(id, field, value) {
 
 let driveMap = null;
 let driveLayers = [];
+let driveEditMode = false;
+
+// 非表示にした候補を除いた、表示対象のドライブ候補
+function activeDriveSpots() {
+  return DRIVE_SPOTS.filter((s) => !state.driveDeleted.includes(s.id));
+}
 
 // 2点間の距離(km) — ハバーサイン公式
 function haversineKm(a, b) {
@@ -554,8 +562,8 @@ function renderDriveMap() {
   driveLayers.forEach((m) => driveMap.removeLayer(m));
   driveLayers = [];
 
-  // DRIVE_SPOTS は時計回り順に並んでいるので、その順を訪問順とする
-  const selectedSpots = DRIVE_SPOTS.filter((s) => getDriveState(s.id).selected);
+  // DRIVE_SPOTS は時計回り順に並んでいるので、その順を訪問順とする(非表示候補は除く)
+  const selectedSpots = activeDriveSpots().filter((s) => getDriveState(s.id).selected);
 
   // ルート線: ホテル → 選択スポット(順) → ホテル
   if (selectedSpots.length) {
@@ -584,7 +592,7 @@ function renderDriveMap() {
   driveLayers.push(startMarker);
 
   // 各スポットのマーカー(選択中は訪問順の番号付き)
-  DRIVE_SPOTS.forEach((spot) => {
+  activeDriveSpots().forEach((spot) => {
     const ds = getDriveState(spot.id);
     const order = ds.selected ? selectedSpots.indexOf(spot) + 1 : null;
     const icon = L.divIcon({
@@ -655,10 +663,19 @@ window.toggleDriveSpot = toggleDriveSpot;
 function renderDrive() {
   const filterOnly = document.getElementById("drive-filter").checked;
 
+  // 編集モードのボタン表示を更新
+  const modeBtn = document.getElementById("drive-edit-mode-btn");
+  if (modeBtn) {
+    modeBtn.textContent = driveEditMode ? "完了" : "編集";
+    modeBtn.classList.toggle("active", driveEditMode);
+  }
+
   renderDriveMap();
 
+  const spots = activeDriveSpots();
+
   // 選択中のスポットまとめ
-  const selectedSpots = DRIVE_SPOTS.filter((s) => getDriveState(s.id).selected);
+  const selectedSpots = spots.filter((s) => getDriveState(s.id).selected);
   const selectedCard = document.getElementById("drive-selected");
   const selectedList = document.getElementById("drive-selected-list");
   if (selectedSpots.length) {
@@ -670,7 +687,8 @@ function renderDrive() {
 
   // スポット一覧
   const el = document.getElementById("drive-list");
-  const spotsToShow = filterOnly ? selectedSpots : DRIVE_SPOTS;
+  el.classList.toggle("edit-mode", driveEditMode);
+  const spotsToShow = filterOnly ? selectedSpots : spots;
 
   let html = "";
   let lastArea = null;
@@ -689,6 +707,7 @@ function renderDrive() {
           </label>
           <h3>${spot.name}</h3>
           <a class="maps-link" href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
+          <button class="drive-delete" data-id="${spot.id}" aria-label="この候補を削除">✕</button>
         </div>
         <p class="drive-desc">${spot.desc}</p>
         <textarea class="drive-memo" data-id="${spot.id}" data-field="memo" placeholder="メモ(訪問順・営業時間・予約状況など)">${ds.memo}</textarea>
@@ -698,6 +717,19 @@ function renderDrive() {
 
   if (filterOnly && spotsToShow.length === 0) {
     html = `<p class="muted">まだ「行く」を選択したスポットがありません。</p>`;
+  }
+
+  // 編集モード時、非表示にした候補を戻せるようにする
+  if (driveEditMode) {
+    const deletedSpots = DRIVE_SPOTS.filter((s) => state.driveDeleted.includes(s.id));
+    if (deletedSpots.length) {
+      html += `
+        <div class="drive-restore">
+          <span class="muted">非表示にした候補(${deletedSpots.length}件):</span>
+          ${deletedSpots.map((s) => `<button class="drive-restore-btn" data-id="${s.id}">↩ ${s.name}</button>`).join("")}
+        </div>
+      `;
+    }
   }
 
   el.innerHTML = html;
@@ -713,9 +745,35 @@ function renderDrive() {
       setDriveState(e.target.dataset.id, e.target.dataset.field, e.target.value);
     });
   });
+
+  // 候補の削除(既定候補は driveDeleted に記録して非表示にする)
+  el.querySelectorAll(".drive-delete").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const id = e.currentTarget.dataset.id;
+      if (!state.driveDeleted.includes(id)) state.driveDeleted.push(id);
+      delete state.drive[id];
+      saveState(state);
+      renderDrive();
+    });
+  });
+
+  // 候補の復元
+  el.querySelectorAll(".drive-restore-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const id = e.currentTarget.dataset.id;
+      state.driveDeleted = state.driveDeleted.filter((x) => x !== id);
+      saveState(state);
+      renderDrive();
+    });
+  });
 }
 
 document.getElementById("drive-filter").addEventListener("change", renderDrive);
+
+document.getElementById("drive-edit-mode-btn").addEventListener("click", () => {
+  driveEditMode = !driveEditMode;
+  renderDrive();
+});
 
 // ---------- メモ・候補地 ----------
 function renderTodo() {
@@ -857,6 +915,7 @@ onSnapshot(TRIP_DOC, (snap) => {
   state.todo = d.todo || {};
   state.budget = d.budget || {};
   state.drive = d.drive || {};
+  state.driveDeleted = d.driveDeleted || [];
   state.customPacking = d.customPacking || [];
   state.packingDeleted = d.packingDeleted || [];
   state.packingText = d.packingText || {};
