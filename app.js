@@ -147,6 +147,62 @@ function renderSummary() {
   `;
 }
 
+// ---------- 次の予定カード ----------
+// dt(タイムゾーン付きISO)を持つ予定だけを絶対時刻でフラット化。
+// 日本/ハワイの時差は dt のオフセットで吸収されるため、端末の時刻と直接比較できる。
+function getDatedEvents() {
+  const events = [];
+  ITINERARY.forEach((day) => {
+    (day.items || []).forEach((it) => {
+      if (!it.dt) return; // 時刻が確定していない予定(夕刻・(朝)など)は対象外
+      const when = new Date(it.dt);
+      if (isNaN(when)) return;
+      events.push({ when, time: it.time, content: it.content, date: day.date });
+    });
+  });
+  events.sort((a, b) => a.when - b.when);
+  return events;
+}
+
+function formatRemaining(ms) {
+  const totalMin = Math.max(0, Math.round(ms / 60000));
+  if (totalMin < 60) return `あと ${totalMin}分`;
+  const totalHours = Math.floor(totalMin / 60);
+  if (totalHours < 24) return `あと ${totalHours}時間${totalMin % 60}分`;
+  const days = Math.floor(totalHours / 24);
+  return `あと ${days}日${totalHours % 24}時間`;
+}
+
+function renderNextEvent() {
+  const el = document.getElementById("next-event");
+  if (!el) return;
+  const now = new Date();
+  const events = getDatedEvents();
+  const next = events.find((e) => e.when > now);
+
+  if (!next) {
+    // 全予定終了後のみ表示。予定が一つもない異常時は非表示。
+    if (events.length && now > events[events.length - 1].when) {
+      el.style.display = "";
+      el.innerHTML = `<div class="next-event-label">次の予定</div>
+        <div class="next-event-done">旅行の全日程が終了しました 🌴 おかえりなさい</div>`;
+    } else {
+      el.style.display = "none";
+    }
+    return;
+  }
+
+  el.style.display = "";
+  el.innerHTML = `
+    <div class="next-event-label">⏰ 次の予定</div>
+    <div class="next-event-main">
+      <span class="next-event-time">${next.date} ${next.time}</span>
+      <span class="next-event-remain">${formatRemaining(next.when - now)}</span>
+    </div>
+    <div class="next-event-content">${next.content}</div>
+  `;
+}
+
 // ---------- 予算管理 ----------
 function getBudgetValue(item, field) {
   const override = state.budget[item.id];
@@ -888,6 +944,7 @@ function applyTheme(theme) {
 
 // ---------- 初期描画 ----------
 function renderAll() {
+  renderNextEvent();
   renderOverview();
   renderItinerary();
   renderSummary();
@@ -903,6 +960,9 @@ function renderAll() {
 
 renderAll();
 initPackingAddForm();
+
+// 「次の予定」の残り時間を1分ごとに更新(再描画は次の予定カードのみ)
+setInterval(renderNextEvent, 60 * 1000);
 
 // Firestore リアルタイム同期
 // hasPendingWrites=true は自分の書き込みのローカル反映なのでスキップ
