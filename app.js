@@ -24,6 +24,7 @@ let state = {
   packingDeleted: [],   // 削除済みの既定項目id
   packingText: {},      // 項目id → 編集後の文言(上書き)
   packingOrder: {},     // カテゴリ名 → 項目idの並び順
+  packingBought: {},    // 項目id → 買い物済みフラグ(packing はパッキング済み)
   theme: localStorage.getItem("hawaii-theme") || "light",
 };
 
@@ -41,6 +42,7 @@ function saveState(s) {
     packingDeleted: s.packingDeleted || [],
     packingText: s.packingText || {},
     packingOrder: s.packingOrder || {},
+    packingBought: s.packingBought || {},
     theme: s.theme || "light",
   }).catch((e) => console.warn("Firestore保存エラー:", e));
 }
@@ -262,14 +264,28 @@ function packingItemHtml(id, fallbackText) {
       </div>
     `;
   }
-  const isChecked = !!state.packing[id];
+  const bought = !!state.packingBought[id];
+  const packed = !!state.packing[id];
   return `
-    <div class="packing-item ${isChecked ? "checked" : ""}" data-id="${id}">
+    <div class="packing-item ${packed ? "checked" : ""}" data-id="${id}">
       <span class="packing-drag" aria-label="並べ替え" title="ドラッグで並べ替え">⠿</span>
-      <input type="checkbox" id="pack-${id}" data-id="${id}" ${isChecked ? "checked" : ""}>
-      <label for="pack-${id}">${text}</label>
-      <button class="packing-edit" data-id="${id}" aria-label="編集">✏️</button>
-      <button class="packing-delete" data-id="${id}" aria-label="削除">✕</button>
+      <div class="packing-main">
+        <div class="packing-row1">
+          <span class="packing-label">${text}</span>
+          <button class="packing-edit" data-id="${id}" aria-label="編集">✏️</button>
+          <button class="packing-delete" data-id="${id}" aria-label="削除">✕</button>
+        </div>
+        <div class="pack-toggles">
+          <label class="pack-toggle bought ${bought ? "on" : ""}">
+            <input type="checkbox" data-id="${id}" data-kind="bought" ${bought ? "checked" : ""}>
+            <span>🛒 買い物済み</span>
+          </label>
+          <label class="pack-toggle packed ${packed ? "on" : ""}">
+            <input type="checkbox" data-id="${id}" data-kind="packed" ${packed ? "checked" : ""}>
+            <span>🎒 パッキング済み</span>
+          </label>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -304,11 +320,13 @@ function renderPacking() {
 
   let html = "";
   let total = 0;
-  let checked = 0;
+  let boughtCount = 0;
+  let packedCount = 0;
 
   const countItem = (id) => {
     total++;
-    if (state.packing[id]) checked++;
+    if (state.packingBought[id]) boughtCount++;
+    if (state.packing[id]) packedCount++;
   };
 
   // カテゴリ別にカスタムアイテムをまとめる
@@ -344,11 +362,17 @@ function renderPacking() {
   });
 
   el.innerHTML = html;
-  document.getElementById("packing-progress").textContent = `${checked} / ${total}`;
+  document.getElementById("packing-progress").textContent =
+    `🛒 ${boughtCount}/${total} ・ 🎒 ${packedCount}/${total}`;
 
-  el.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+  el.querySelectorAll('.pack-toggle input[type="checkbox"]').forEach((cb) => {
     cb.addEventListener("change", (e) => {
-      state.packing[e.target.dataset.id] = e.target.checked;
+      const id = e.target.dataset.id;
+      if (e.target.dataset.kind === "bought") {
+        state.packingBought[id] = e.target.checked;
+      } else {
+        state.packing[id] = e.target.checked;
+      }
       saveState(state);
       renderPacking();
     });
@@ -364,6 +388,7 @@ function renderPacking() {
         state.packingDeleted.push(id);
       }
       delete state.packing[id];
+      delete state.packingBought[id];
       delete state.packingText[id];
       saveState(state);
       renderPacking();
@@ -840,6 +865,7 @@ onSnapshot(TRIP_DOC, (snap) => {
   state.packingDeleted = d.packingDeleted || [];
   state.packingText = d.packingText || {};
   state.packingOrder = d.packingOrder || {};
+  state.packingBought = d.packingBought || {};
   if (d.theme && d.theme !== state.theme) {
     state.theme = d.theme;
     applyTheme(d.theme);

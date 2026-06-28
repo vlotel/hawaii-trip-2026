@@ -263,12 +263,15 @@ table th {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 #packing-progress {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   color: var(--primary-dark);
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .packing-category {
@@ -283,26 +286,76 @@ table th {
 
 .packing-item {
   display: flex;
-  align-items: center;
-  padding: 6px 0;
+  align-items: flex-start;
+  padding: 8px 0;
   border-bottom: 1px solid var(--row-divider);
 }
 
-.packing-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
-  flex-shrink: 0;
+.packing-item.editing {
+  align-items: center;
+  gap: 6px;
 }
 
-.packing-item label {
+.packing-main {
   flex: 1;
-  font-size: 0.9rem;
+  min-width: 0;
 }
 
-.packing-item.checked label {
+.packing-row1 {
+  display: flex;
+  align-items: center;
+}
+
+.packing-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.packing-item.checked .packing-label {
   text-decoration: line-through;
   color: var(--muted);
+}
+
+/* 2種類のチェック(🛒買い物済み / 🎒パッキング済み) */
+.pack-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.pack-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.pack-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.pack-toggle.bought.on {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+}
+
+.pack-toggle.packed.on {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
 }
 
 .packing-edit,
@@ -334,6 +387,7 @@ table th {
 .packing-drag {
   display: none;
   margin-right: 8px;
+  margin-top: 2px;          /* 1行目(項目名)の高さに合わせる */
   color: var(--muted);
   font-size: 1.1rem;
   line-height: 1;
