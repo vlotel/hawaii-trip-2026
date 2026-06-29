@@ -53,7 +53,8 @@ header {
   position: relative;
   background: linear-gradient(160deg, #0d9488, #0f766e);
   color: white;
-  padding: calc(env(safe-area-inset-top) + 16px) 16px 18px;
+  padding: 16px 16px 18px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
   text-align: center;
 }
 
@@ -108,7 +109,7 @@ header .period {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(249, 249, 249, 0.6);
+  background: rgba(249, 249, 249, 0.42);
   backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
   -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
   border-top: 0.5px solid rgba(0, 0, 0, 0.14);
@@ -117,7 +118,7 @@ header .period {
 }
 
 body.dark #tabs {
-  background: rgba(18, 26, 44, 0.65);
+  background: rgba(18, 26, 44, 0.5);
   backdrop-filter: blur(28px) saturate(180%) brightness(0.95);
   -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(0.95);
   border-top-color: rgba(255, 255, 255, 0.1);
