@@ -661,12 +661,13 @@ function renderDriveMap() {
     marker.bindPopup(`
       <div class="drive-popup">
         <h4>${order ? order + ". " : ""}${spot.name}</h4>
-        <p class="muted">${spot.area} ・ 滞在目安 ${spot.stayMin ?? 40}分</p>
+        <p class="muted">${spot.area}</p>
         <p>${spot.desc}</p>
         <button class="popup-toggle ${ds.selected ? "on" : ""}" onclick="toggleDriveSpot('${spot.id}')">
           ${ds.selected ? "✓ 行く(選択中)" : "+ 行くに追加"}
         </button>
         <a href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
+        <p class="muted">滞在目安 ${spot.stayMin ?? 40}分</p>
       </div>
     `);
     driveLayers.push(marker);
@@ -762,8 +763,8 @@ function renderDrive() {
             行く
           </label>
           <h3>${spot.name}</h3>
-          <span class="muted drive-staymin">滞在目安 ${spot.stayMin ?? 40}分</span>
           <a class="maps-link" href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
+          <span class="muted drive-staymin">滞在目安 ${spot.stayMin ?? 40}分</span>
           <button class="drive-delete" data-id="${spot.id}" aria-label="この候補を削除">✕</button>
         </div>
         <p class="drive-desc">${spot.desc}</p>
