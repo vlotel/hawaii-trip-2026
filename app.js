@@ -203,82 +203,6 @@ function renderNextEvent() {
   `;
 }
 
-// ---------- 予算管理 ----------
-function getBudgetValue(item, field) {
-  const override = state.budget[item.id];
-  if (override && override[field] !== undefined) return override[field];
-  return item[field];
-}
-
-function setBudgetValue(id, field, value) {
-  state.budget[id] = state.budget[id] || {};
-  state.budget[id][field] = value;
-  saveState(state);
-  renderBudgetTotal();
-}
-
-function renderBudget() {
-  const el = document.getElementById("budget-table");
-  el.innerHTML = `
-    <table>
-      <thead><tr><th>項目</th><th>金額(目安)</th><th>状況</th><th>メモ</th></tr></thead>
-      <tbody>
-        ${BUDGET_ITEMS.map((item) => {
-          const estimate = getBudgetValue(item, "estimate");
-          const status = getBudgetValue(item, "status");
-          const memo = getBudgetValue(item, "memo");
-          return `
-            <tr>
-              <td>${item.item}</td>
-              <td><input type="text" data-id="${item.id}" data-field="estimate" value="${estimate.replace(/"/g, "&quot;")}" placeholder="金額を入力"></td>
-              <td>
-                <select data-id="${item.id}" data-field="status">
-                  <option value="未確定" ${status === "未確定" ? "selected" : ""}>未確定</option>
-                  <option value="確定" ${status === "確定" ? "selected" : ""}>確定</option>
-                  <option value="不要" ${status === "不要" ? "selected" : ""}>不要</option>
-                </select>
-              </td>
-              <td><input type="text" data-id="${item.id}" data-field="memo" value="${memo.replace(/"/g, "&quot;")}" placeholder="メモ"></td>
-            </tr>
-          `;
-        }).join("")}
-      </tbody>
-    </table>
-  `;
-
-  el.querySelectorAll("input, select").forEach((input) => {
-    input.addEventListener("input", (e) => {
-      setBudgetValue(e.target.dataset.id, e.target.dataset.field, e.target.value);
-    });
-  });
-
-  renderBudgetTotal();
-}
-
-// 「○○円/人」「○○円」のような文字列から数値を抜き出す(完全な計算式ではなく目安)
-function parseAmount(text) {
-  if (!text) return 0;
-  const match = text.replace(/,/g, "").match(/[\d.]+/);
-  return match ? parseFloat(match[0]) : 0;
-}
-
-function renderBudgetTotal() {
-  const el = document.getElementById("budget-total");
-  let total = 0;
-  let hasUnknown = false;
-  BUDGET_ITEMS.forEach((item) => {
-    const status = getBudgetValue(item, "status");
-    if (status === "不要") return;
-    const estimate = getBudgetValue(item, "estimate");
-    if (estimate) {
-      total += parseAmount(estimate);
-    } else {
-      hasUnknown = true;
-    }
-  });
-  el.innerHTML = `見積り合計(金額入力分のみ): ${total.toLocaleString()} 円${hasUnknown ? "(金額未入力の項目あり)" : ""}`;
-}
-
 // ---------- 持ち物リスト ----------
 // 編集中の項目id / 編集モード表示(いずれも永続化しない一時状態)
 let editingPackingId = null;
@@ -949,7 +873,6 @@ function renderAll() {
   renderOverview();
   renderItinerary();
   renderSummary();
-  renderBudget();
   renderPacking();
   renderDrive();
   renderTodo();
