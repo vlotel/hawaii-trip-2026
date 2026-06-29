@@ -42,18 +42,18 @@ body.dark .drive-spot {
 
 body {
   margin: 0;
-  font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  padding-bottom: 40px;
+  -webkit-font-smoothing: antialiased;
   transition: background 0.25s, color 0.25s;
 }
 
 header {
   position: relative;
-  background: linear-gradient(135deg, #0d9488, #0f766e);
+  background: linear-gradient(160deg, #0d9488, #0f766e);
   color: white;
-  padding: 20px 16px;
+  padding: 20px 16px 18px;
   text-align: center;
 }
 
@@ -108,35 +108,42 @@ header .period {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--card-bg);
-  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+  padding-bottom: env(safe-area-inset-bottom);
   z-index: 1000;
-  overflow-x: auto;
+}
+
+body.dark #tabs {
+  background: rgba(30, 41, 59, 0.88);
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 .tab-btn {
   flex: 1;
-  padding: 12px 8px;
+  padding: 10px 4px 8px;
   border: none;
   background: none;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   cursor: pointer;
   color: var(--muted);
-  border-top: 3px solid transparent;
   white-space: nowrap;
+  letter-spacing: -0.01em;
+  transition: color 0.15s;
 }
 
 .tab-btn.active {
-  color: var(--primary-dark);
-  border-top-color: var(--primary);
-  font-weight: bold;
+  color: var(--primary);
+  font-weight: 600;
 }
 
 main {
   max-width: 760px;
   margin: 0 auto;
   padding: 12px;
-  padding-bottom: 70px;
+  padding-bottom: calc(62px + env(safe-area-inset-bottom));
 }
 
 .tab-panel {
@@ -149,10 +156,10 @@ main {
 
 .card {
   background: var(--card-bg);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 16px;
   margin-bottom: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
 }
 
 .card h2 {
@@ -220,10 +227,10 @@ main {
 /* 行程表 */
 .day-card {
   background: var(--card-bg);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 16px;
   margin-bottom: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   border-left: 4px solid var(--primary);
 }
 
@@ -469,11 +476,12 @@ table th {
   border: 1px solid var(--border);
   background: none;
   color: var(--primary-dark);
-  border-radius: 6px;
-  padding: 4px 12px;
+  border-radius: 8px;
+  padding: 5px 14px;
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .packing-mode-btn.active {
@@ -741,10 +749,10 @@ table th {
 
 .drive-spot {
   background: var(--card-bg);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 12px 16px;
   margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   border-left: 4px solid var(--border);
 }
 
