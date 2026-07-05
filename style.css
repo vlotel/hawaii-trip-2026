@@ -828,6 +828,19 @@ table th {
 }
 
 /* メモ・候補地 */
+.shared-memo-textarea {
+  width: 100%;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
 .todo-item {
   display: flex;
   align-items: flex-start;

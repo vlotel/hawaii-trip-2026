@@ -26,6 +26,7 @@ let state = {
   packingText: {},      // 項目id → 編集後の文言(上書き)
   packingOrder: {},     // カテゴリ名 → 項目idの並び順
   packingBought: {},    // 項目id → 買い物済みフラグ(packing はパッキング済み)
+  sharedMemo: "",       // 夫婦で共有する自由記述メモ
   theme: localStorage.getItem("hawaii-theme") || "light",
 };
 
@@ -45,6 +46,7 @@ function saveState(s) {
     packingText: s.packingText || {},
     packingOrder: s.packingOrder || {},
     packingBought: s.packingBought || {},
+    sharedMemo: s.sharedMemo || "",
     theme: s.theme || "light",
   }).catch((e) => console.warn("Firestore保存エラー:", e));
 }
@@ -757,6 +759,25 @@ document.getElementById("drive-edit-mode-btn").addEventListener("click", () => {
   renderDrive();
 });
 
+// ---------- 共有メモ ----------
+// 値は state から反映するが、入力中(フォーカス中)の上書きは避ける(textareaを再生成しないため
+// カーソル位置・フォーカスも保持される)。
+function renderSharedMemo() {
+  const el = document.getElementById("shared-memo");
+  if (!el) return;
+  if (document.activeElement === el) return;
+  if (el.value !== state.sharedMemo) el.value = state.sharedMemo;
+}
+
+function initSharedMemo() {
+  const el = document.getElementById("shared-memo");
+  if (!el) return;
+  el.addEventListener("input", (e) => {
+    state.sharedMemo = e.target.value;
+    saveState(state);
+  });
+}
+
 // ---------- メモ・候補地 ----------
 function renderTodo() {
   const el = document.getElementById("todo-list");
@@ -875,6 +896,7 @@ function renderAll() {
   renderSummary();
   renderPacking();
   renderDrive();
+  renderSharedMemo();
   renderTodo();
   renderInsurance();
   renderHotelInfo();
@@ -884,6 +906,7 @@ function renderAll() {
 
 renderAll();
 initPackingAddForm();
+initSharedMemo();
 
 // 「次の予定」の残り時間を1分ごとに更新(再描画は次の予定カードのみ)
 setInterval(renderNextEvent, 60 * 1000);
@@ -906,6 +929,7 @@ onSnapshot(TRIP_DOC, (snap) => {
   state.packingText = d.packingText || {};
   state.packingOrder = d.packingOrder || {};
   state.packingBought = d.packingBought || {};
+  state.sharedMemo = d.sharedMemo || "";
   if (d.theme && d.theme !== state.theme) {
     state.theme = d.theme;
     applyTheme(d.theme);
