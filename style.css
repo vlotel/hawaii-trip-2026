@@ -852,6 +852,56 @@ table th {
 .drive-marker-icon.cat-shopping { background: #db2777; }
 .drive-marker-icon.cat-attraction { background: #b45309; }
 
+/* レンタカー計画カード(ドライブタブ・折りたたみ式) */
+.rental-car-details summary {
+  cursor: pointer;
+}
+
+.rental-car-details summary h2 {
+  display: inline;
+  font-size: 1.05rem;
+}
+
+.rental-status {
+  font-size: 0.7rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: middle;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.rental-summary-sub {
+  display: block;
+  font-size: 0.8rem;
+  margin: 4px 0 0 1.15em;
+}
+
+.rental-car-details h3 {
+  font-size: 0.92rem;
+  margin: 14px 0 4px;
+  color: var(--primary-dark);
+}
+
+.rental-list {
+  margin: 4px 0;
+  padding-left: 1.2em;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.rental-cost-table tr:last-child td {
+  font-weight: bold;
+  color: var(--primary-dark);
+}
+
+.rental-disclaimer {
+  font-size: 0.78rem;
+  margin: 8px 0 0;
+}
+
 .maps-link {
   font-size: 0.8rem;
   color: var(--primary-dark);
