@@ -794,6 +794,54 @@ table th {
   white-space: nowrap;
 }
 
+/* カテゴリバッジ(スポット名の横) */
+.drive-cat-badge {
+  background: var(--cat-color, var(--primary));
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* カテゴリ絞り込みチップ(凡例を兼ねる) */
+.drive-cat-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.drive-cat-chip {
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.drive-cat-chip.active {
+  background: var(--cat-color, var(--primary));
+  border-color: var(--cat-color, var(--primary));
+  color: #fff;
+  font-weight: bold;
+}
+
+.drive-cat-chip .chip-count {
+  opacity: 0.7;
+  font-size: 0.75rem;
+}
+
+/* カテゴリ別マーカー色(未選択時。選択中はオレンジの番号付きのまま) */
+.drive-marker-icon.cat-beach { background: #0369a1; }
+.drive-marker-icon.cat-view { background: #7c3aed; }
+.drive-marker-icon.cat-food { background: #dc2626; }
+.drive-marker-icon.cat-shopping { background: #db2777; }
+.drive-marker-icon.cat-attraction { background: #b45309; }
+
 .maps-link {
   font-size: 0.8rem;
   color: var(--primary-dark);
