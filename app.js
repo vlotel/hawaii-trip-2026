@@ -501,6 +501,16 @@ function getDriveState(id) {
   return state.drive[id] || { selected: false, memo: "" };
 }
 
+// スポットのカテゴリ情報(未定義カテゴリでも落ちないようフォールバック)
+function driveCat(spot) {
+  return DRIVE_CATEGORIES[spot.cat] || { label: "その他", emoji: "📍", color: "#64748b" };
+}
+
+function driveCatBadge(spot) {
+  const c = driveCat(spot);
+  return `<span class="drive-cat-badge" style="--cat-color:${c.color}">${c.emoji} ${c.label}</span>`;
+}
+
 function setDriveState(id, field, value) {
   state.drive[id] = state.drive[id] || { selected: false, memo: "" };
   state.drive[id][field] = value;
@@ -511,6 +521,7 @@ function setDriveState(id, field, value) {
 let driveMap = null;
 let driveLayers = [];
 let driveEditMode = false;
+let driveCatFilter = null; // カテゴリ絞り込み(null=すべて。永続化しない一時状態)
 
 // 非表示にした候補を除いた、表示対象のドライブ候補
 function activeDriveSpots() {
@@ -573,12 +584,14 @@ function renderDriveMap() {
   startMarker.bindPopup(`<div class="drive-popup"><h4>${DRIVE_START.name}</h4><p class="muted">ドライブの起点・終点</p></div>`);
   driveLayers.push(startMarker);
 
-  // 各スポットのマーカー(選択中は訪問順の番号付き)
+  // 各スポットのマーカー(選択中は訪問順の番号付き、未選択はカテゴリ色の点)
+  // カテゴリ絞り込み中は、選択済みを除き対象カテゴリ以外を地図からも隠す
   activeDriveSpots().forEach((spot) => {
     const ds = getDriveState(spot.id);
+    if (driveCatFilter && spot.cat !== driveCatFilter && !ds.selected) return;
     const order = ds.selected ? selectedSpots.indexOf(spot) + 1 : null;
     const icon = L.divIcon({
-      className: `drive-marker-icon ${ds.selected ? "selected" : ""}`,
+      className: `drive-marker-icon ${ds.selected ? "selected" : `cat-${spot.cat}`}`,
       html: order ? `<span>${order}</span>` : "",
       iconSize: ds.selected ? [24, 24] : [14, 14],
     });
@@ -587,7 +600,7 @@ function renderDriveMap() {
     marker.bindPopup(`
       <div class="drive-popup">
         <h4>${order ? order + ". " : ""}${spot.name}</h4>
-        <p class="muted">${spot.area}</p>
+        <p class="muted">${driveCat(spot).emoji} ${driveCat(spot).label} ／ ${spot.area}</p>
         <p>${spot.desc}</p>
         <button class="popup-toggle ${ds.selected ? "on" : ""}" onclick="toggleDriveSpot('${spot.id}')">
           ${ds.selected ? "✓ 行く(選択中)" : "+ 行くに追加"}
@@ -643,8 +656,33 @@ function toggleDriveSpot(id) {
 }
 window.toggleDriveSpot = toggleDriveSpot;
 
+// カテゴリ絞り込みチップ(凡例を兼ねる)
+function renderDriveCatFilter() {
+  const el = document.getElementById("drive-cat-filter");
+  if (!el) return;
+  const counts = {};
+  activeDriveSpots().forEach((s) => { counts[s.cat] = (counts[s.cat] || 0) + 1; });
+  // 絞り込み中カテゴリの候補が全て非表示になったら、不可視のままフィルタが残らないよう解除
+  if (driveCatFilter && !counts[driveCatFilter]) driveCatFilter = null;
+  // 「すべて」チップは固定の濃色を指定(未指定だとダークテーマで --primary が明色になり白文字が読めない)
+  let html = `<button class="drive-cat-chip ${driveCatFilter === null ? "active" : ""}" data-cat="" style="--cat-color:#0f766e">すべて</button>`;
+  Object.entries(DRIVE_CATEGORIES).forEach(([key, c]) => {
+    if (!counts[key]) return;
+    html += `<button class="drive-cat-chip ${driveCatFilter === key ? "active" : ""}" data-cat="${key}" style="--cat-color:${c.color}">${c.emoji} ${c.label} <span class="chip-count">${counts[key]}</span></button>`;
+  });
+  el.innerHTML = html;
+  el.querySelectorAll(".drive-cat-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const cat = btn.dataset.cat || null;
+      driveCatFilter = (cat === null || driveCatFilter === cat) ? null : cat;
+      renderDrive();
+    });
+  });
+}
+
 function renderDrive() {
   const filterOnly = document.getElementById("drive-filter").checked;
+  renderDriveCatFilter();
 
   // 編集モードのボタン表示を更新
   const modeBtn = document.getElementById("drive-edit-mode-btn");
@@ -663,15 +701,16 @@ function renderDrive() {
   const selectedList = document.getElementById("drive-selected-list");
   if (selectedSpots.length) {
     selectedCard.style.display = "";
-    selectedList.innerHTML = selectedSpots.map((s) => `<li>${s.name}<span class="muted">(${s.area})</span></li>`).join("");
+    selectedList.innerHTML = selectedSpots.map((s) => `<li>${driveCat(s).emoji} ${s.name}<span class="muted">(${s.area})</span></li>`).join("");
   } else {
     selectedCard.style.display = "none";
   }
 
-  // スポット一覧
+  // スポット一覧(「選択中のみ」とカテゴリ絞り込みの両方を適用)
   const el = document.getElementById("drive-list");
   el.classList.toggle("edit-mode", driveEditMode);
-  const spotsToShow = filterOnly ? selectedSpots : spots;
+  let spotsToShow = filterOnly ? selectedSpots : spots;
+  if (driveCatFilter) spotsToShow = spotsToShow.filter((s) => s.cat === driveCatFilter);
 
   let html = "";
   let lastArea = null;
@@ -689,6 +728,7 @@ function renderDrive() {
             行く
           </label>
           <h3>${spot.name}</h3>
+          ${driveCatBadge(spot)}
           <a class="maps-link" href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
           <span class="muted drive-staymin">滞在目安 ${spot.stayMin ?? 40}分</span>
           <button class="drive-delete" data-id="${spot.id}" aria-label="この候補を削除">✕</button>
@@ -699,8 +739,10 @@ function renderDrive() {
     `;
   });
 
-  if (filterOnly && spotsToShow.length === 0) {
-    html = `<p class="muted">まだ「行く」を選択したスポットがありません。</p>`;
+  if (spotsToShow.length === 0) {
+    html = filterOnly && !selectedSpots.length
+      ? `<p class="muted">まだ「行く」を選択したスポットがありません。</p>`
+      : `<p class="muted">この条件に合うスポットがありません。</p>`;
   }
 
   // 編集モード時、非表示にした候補を戻せるようにする
