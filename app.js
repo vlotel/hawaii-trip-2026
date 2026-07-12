@@ -728,10 +728,12 @@ function renderDrive() {
             行く
           </label>
           <h3>${spot.name}</h3>
-          ${driveCatBadge(spot)}
-          <a class="maps-link" href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
-          <span class="muted drive-staymin">滞在目安 ${spot.stayMin ?? 40}分</span>
           <button class="drive-delete" data-id="${spot.id}" aria-label="この候補を削除">✕</button>
+        </div>
+        <div class="drive-spot-meta">
+          ${driveCatBadge(spot)}
+          <span class="muted drive-staymin">滞在目安 ${spot.stayMin ?? 40}分</span>
+          <a class="maps-link" href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
         </div>
         <p class="drive-desc">${spot.desc}</p>
         <textarea class="drive-memo" data-id="${spot.id}" data-field="memo" placeholder="メモ(訪問順・営業時間・予約状況など)">${ds.memo}</textarea>
