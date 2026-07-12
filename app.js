@@ -844,6 +844,32 @@ function renderTodo() {
   });
 }
 
+// ---------- ドライブ: レンタカー計画 ----------
+// 静的データのみで開閉状態(details)を持つため renderAll には入れず、起動時に1回だけ描画する
+// (Firestore同期のたびに再描画すると、開いていたカードが閉じてしまう)
+function renderRentalCar() {
+  const el = document.getElementById("rental-car");
+  if (!el) return;
+  el.innerHTML = `
+    <details class="rental-car-details">
+      <summary>
+        <h2>🚗 レンタカー: ${RENTAL_CAR.company} <span class="rental-status">${RENTAL_CAR.status}</span></h2>
+        <span class="muted rental-summary-sub">${RENTAL_CAR.car} ／ ${RENTAL_CAR.period} ▸ タップで詳細</span>
+      </summary>
+      <h3>基本情報</h3>
+      <ul class="rental-list">${RENTAL_CAR.basics.map((t) => `<li>${t}</li>`).join("")}</ul>
+      <h3>料金の目安</h3>
+      <table class="insurance-table rental-cost-table">
+        <tbody>${RENTAL_CAR.costRows.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</tbody>
+      </table>
+      <ul class="rental-list muted">${RENTAL_CAR.options.map((t) => `<li>${t}</li>`).join("")}</ul>
+      <h3>注意点</h3>
+      <ul class="rental-list">${RENTAL_CAR.cautions.map((t) => `<li>${t}</li>`).join("")}</ul>
+      <p class="muted rental-disclaimer">※${RENTAL_CAR.disclaimer}</p>
+    </details>
+  `;
+}
+
 function renderInsurance() {
   const el = document.getElementById("insurance-info");
   if (!el) return;
@@ -949,6 +975,7 @@ function renderAll() {
 }
 
 renderAll();
+renderRentalCar();
 initPackingAddForm();
 initSharedMemo();
 
