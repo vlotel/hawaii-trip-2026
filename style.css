@@ -765,8 +765,7 @@ table th {
 
 .drive-spot-header {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 10px;
 }
 
@@ -774,6 +773,17 @@ table th {
   margin: 0;
   font-size: 1rem;
   flex: 1;
+  min-width: 0;
+  line-height: 1.45;
+}
+
+/* バッジ・滞在目安・Google Mapsリンクの2段目 */
+.drive-spot-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 8px;
 }
 
 .drive-checkbox {
