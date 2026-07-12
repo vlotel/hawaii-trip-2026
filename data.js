@@ -276,6 +276,15 @@ const INSURANCE_INFO = {
 // それぞれの一般的な滞在時間を目安に設定(島一周ドライブで複数箇所を巡ることを前提とした短めの見積もり)。
 // Tripadvisor・Koko Crater Trail公式サイト・Dole Plantation公式サイト等のWeb検索結果を参考(取得日: 2026-06-28)。
 // 現地の混雑状況や個人の興味により前後するため、あくまで目安。
+// ドライブ候補のカテゴリ定義(各スポットの cat フィールドで参照)。
+// リストのバッジ・絞り込みチップ・地図マーカーの色分けに使う。
+const DRIVE_CATEGORIES = {
+  beach:      { label: "ビーチ",         emoji: "🏖️", color: "#0369a1" },
+  view:       { label: "絶景・トレイル", emoji: "🌄", color: "#7c3aed" },
+  food:       { label: "グルメ",         emoji: "🍽️", color: "#dc2626" },
+  shopping:   { label: "ショッピング",   emoji: "🛍️", color: "#db2777" },
+  attraction: { label: "観光施設",       emoji: "🎡", color: "#b45309" },
+};
 // ドライブの起点/終点(宿泊ホテル = ワイキキ)
 const DRIVE_START = {
   name: "ホテル(ワイキキ起点)",
@@ -284,6 +293,7 @@ const DRIVE_START = {
 const DRIVE_SPOTS = [
   {
     id: "hanauma-bay",
+    cat: "beach",
     area: "東部",
     name: "ハナウマ湾",
     lat: 21.2690, lng: -157.6938,
@@ -292,6 +302,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "koko-crater",
+    cat: "view",
     area: "東部",
     name: "ココクレーター・トレイル",
     lat: 21.2826, lng: -157.6953,
@@ -300,6 +311,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "makapuu-point",
+    cat: "view",
     area: "東部",
     name: "マカプウ岬展望台(灯台トレイル)",
     lat: 21.2967, lng: -157.6489,
@@ -308,6 +320,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "waimanalo-beach",
+    cat: "beach",
     area: "東部・ウィンドワード",
     name: "ワイマナロビーチ",
     lat: 21.3372, lng: -157.7194,
@@ -316,6 +329,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "kailua-beach",
+    cat: "beach",
     area: "ウィンドワード",
     name: "カイルアビーチ",
     lat: 21.3958, lng: -157.7256,
@@ -324,6 +338,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "lanikai-beach",
+    cat: "beach",
     area: "ウィンドワード",
     name: "ラニカイビーチ",
     lat: 21.3925, lng: -157.7144,
@@ -332,6 +347,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "windward-mall",
+    cat: "shopping",
     area: "ウィンドワード",
     name: "ウィンドワード・モール",
     lat: 21.4028, lng: -157.7996,
@@ -340,6 +356,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "waiahole-poi",
+    cat: "food",
     area: "ウィンドワード",
     name: "ワイアホレ ポイ ファクトリー",
     lat: 21.4820, lng: -157.8452,
@@ -348,6 +365,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "nuuanu-pali",
+    cat: "view",
     area: "中央部",
     name: "ヌウアヌ・パリ展望台",
     lat: 21.3656, lng: -157.7917,
@@ -356,6 +374,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "kualoa-ranch",
+    cat: "attraction",
     area: "ウィンドワード北部",
     name: "クアロア・ランチ",
     lat: 21.5219, lng: -157.8508,
@@ -364,6 +383,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "mokolii-chinamans-hat",
+    cat: "view",
     area: "ウィンドワード北部",
     name: "モクオリイ島(チャイナマンズハット)",
     lat: 21.5236, lng: -157.8392,
@@ -372,6 +392,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "tropical-farms-macnuts",
+    cat: "shopping",
     area: "ウィンドワード北部",
     name: "Tropical Farms マカダミアナッツ",
     lat: 21.5535, lng: -157.8490,
@@ -380,6 +401,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "kahuku-farms",
+    cat: "food",
     area: "ノースショア",
     name: "カフク ファーム",
     lat: 21.6772, lng: -157.9510,
@@ -388,6 +410,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "giovannis-shrimp-truck",
+    cat: "food",
     area: "ノースショア",
     name: "ジョバンニ・シュリンプ・トラック(カフク本店)",
     lat: 21.6715, lng: -157.9498,
@@ -396,6 +419,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "shark-cove",
+    cat: "beach",
     area: "ノースショア",
     name: "シャークス・コーブ(ププケア)",
     lat: 21.6517, lng: -158.0625,
@@ -404,6 +428,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "waimea-bay",
+    cat: "beach",
     area: "ノースショア",
     name: "ワイメア湾",
     lat: 21.6383, lng: -158.0631,
@@ -412,6 +437,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "sunset-beach",
+    cat: "beach",
     area: "ノースショア",
     name: "サンセットビーチ",
     lat: 21.6747, lng: -158.0408,
@@ -420,6 +446,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "teds-bakery",
+    cat: "food",
     area: "ノースショア",
     name: "テッズ ベーカリー",
     lat: 21.6754, lng: -158.0438,
@@ -428,6 +455,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "laniakea-beach",
+    cat: "beach",
     area: "ノースショア",
     name: "ラニアケアビーチ(タートルビーチ)",
     lat: 21.6178, lng: -158.0855,
@@ -436,6 +464,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "haleiwa-town",
+    cat: "shopping",
     area: "ノースショア",
     name: "ハレイワ・タウン",
     lat: 21.5928, lng: -158.1039,
@@ -444,6 +473,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "matsumoto-shave-ice",
+    cat: "food",
     area: "ノースショア",
     name: "マツモト シェイブアイス",
     lat: 21.5918, lng: -158.1033,
@@ -452,6 +482,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "patagonia-haleiwa",
+    cat: "shopping",
     area: "ノースショア",
     name: "パタゴニア ハレイワ店",
     lat: 21.5905, lng: -158.1016,
@@ -460,6 +491,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "giovannis-aloha-shrimp",
+    cat: "food",
     area: "ノースショア",
     name: "ジョバンニ アロハ シュリンプ(ハレイワ店)",
     lat: 21.5930, lng: -158.1010,
@@ -468,6 +500,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "dole-plantation",
+    cat: "attraction",
     area: "中央部",
     name: "ドール・プランテーション",
     lat: 21.5256, lng: -158.0381,
@@ -476,6 +509,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "sky-waikiki",
+    cat: "food",
     area: "ワイキキ周辺(ホテル至近)",
     name: "スカイ ワイキキ",
     lat: 21.2799, lng: -157.8293,
@@ -484,6 +518,7 @@ const DRIVE_SPOTS = [
   },
   {
     id: "piko-kitchen-bar",
+    cat: "food",
     area: "ワイキキ周辺(ホテル至近)",
     name: "Piko Kitchen + Bar",
     lat: 21.2810, lng: -157.8264,
