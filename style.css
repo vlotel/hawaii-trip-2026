@@ -897,6 +897,21 @@ table th {
   color: var(--primary-dark);
 }
 
+/* A案/B案の3列比較になったため、この表だけnowrapを解除して幅内に収める */
+.rental-cost-table th {
+  white-space: normal;
+  font-size: 0.78rem;
+}
+
+.rental-cost-table td {
+  font-size: 0.82rem;
+}
+
+.rental-cost-table td:first-child {
+  white-space: normal;
+  width: auto;
+}
+
 .rental-disclaimer {
   font-size: 0.78rem;
   margin: 8px 0 0;
