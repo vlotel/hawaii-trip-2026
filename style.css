@@ -852,6 +852,40 @@ table th {
 .drive-marker-icon.cat-shopping { background: #db2777; }
 .drive-marker-icon.cat-attraction { background: #b45309; }
 
+/* プラン4行程カード(ドライブタブ) */
+.drive-plan-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 6px;
+}
+
+.drive-plan-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.drive-plan-time {
+  min-width: 92px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: var(--primary-dark);
+  white-space: nowrap;
+}
+
+.drive-plan-text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  flex: 1;
+  min-width: 0;
+}
+
+.drive-plan-note {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+}
+
 /* レンタカー計画カード(ドライブタブ・折りたたみ式) */
 .rental-car-details summary {
   cursor: pointer;
