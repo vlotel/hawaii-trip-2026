@@ -844,6 +844,25 @@ function renderTodo() {
   });
 }
 
+// ---------- ドライブ: 行程カード(プラン4) ----------
+// 静的データのみ。renderRentalCar と同じく起動時に1回だけ描画する
+function renderDrivePlan() {
+  const el = document.getElementById("drive-plan");
+  if (!el) return;
+  el.innerHTML = `
+    <h2>🗺️ ${DRIVE_PLAN.title}</h2>
+    <div class="drive-plan-steps">
+      ${DRIVE_PLAN.steps.map((s) => `
+        <div class="drive-plan-step">
+          <span class="drive-plan-time">${s.time}</span>
+          <span class="drive-plan-text">${s.text}</span>
+        </div>
+      `).join("")}
+    </div>
+    <p class="muted drive-plan-note">${DRIVE_PLAN.note}</p>
+  `;
+}
+
 // ---------- ドライブ: レンタカー計画 ----------
 // 静的データのみで開閉状態(details)を持つため renderAll には入れず、起動時に1回だけ描画する
 // (Firestore同期のたびに再描画すると、開いていたカードが閉じてしまう)
@@ -977,6 +996,7 @@ function renderAll() {
 }
 
 renderAll();
+renderDrivePlan();
 renderRentalCar();
 initPackingAddForm();
 initSharedMemo();
