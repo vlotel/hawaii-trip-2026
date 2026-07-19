@@ -858,10 +858,12 @@ function renderRentalCar() {
       </summary>
       <h3>基本情報</h3>
       <ul class="rental-list">${RENTAL_CAR.basics.map((t) => `<li>${t}</li>`).join("")}</ul>
-      <h3>料金の目安</h3>
+      <h3>料金の目安(A案/B案 比較)</h3>
       <table class="insurance-table rental-cost-table">
-        <tbody>${RENTAL_CAR.costRows.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</tbody>
+        <thead><tr>${RENTAL_CAR.costHeader.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>${RENTAL_CAR.costRows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
       </table>
+      <p class="muted rental-disclaimer">${RENTAL_CAR.costNote}</p>
       <ul class="rental-list muted">${RENTAL_CAR.options.map((t) => `<li>${t}</li>`).join("")}</ul>
       <h3>注意点</h3>
       <ul class="rental-list">${RENTAL_CAR.cautions.map((t) => `<li>${t}</li>`).join("")}</ul>
