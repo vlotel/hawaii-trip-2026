@@ -984,6 +984,85 @@ table th {
   padding-left: 1.2em;
 }
 
+/* ドライブ: 立ち寄りスポットガイド(地図なし・ルート順リスト) */
+.guide-list { margin-top: 4px; }
+
+.guide-area {
+  margin: 20px 0 10px;
+  font-size: 0.95rem;
+  color: var(--primary-dark);
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--table-head);
+}
+.guide-area:first-child { margin-top: 6px; }
+
+.guide-spot {
+  padding: 9px 0 9px 12px;
+  border-left: 3px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.guide-spot.is-plan {
+  border-left-color: var(--accent);
+  background: var(--table-head);
+  border-radius: 0 10px 10px 0;
+  padding: 10px 12px;
+}
+
+.guide-spot-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.guide-cat { font-size: 1.05rem; line-height: 1; flex-shrink: 0; }
+
+.guide-name {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+.guide-spot.is-plan .guide-name { font-weight: bold; }
+.guide-star { color: var(--accent); }
+
+.guide-maps {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #fff;
+  background: var(--primary);
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 5px 13px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.guide-maps:active { background: var(--primary-dark); }
+
+.guide-desc {
+  margin: 6px 0 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+.guide-desc.muted { font-size: 0.82rem; margin-top: 4px; }
+
+.guide-offroute {
+  margin-top: 20px;
+  border-top: 1px dashed var(--border);
+  padding-top: 12px;
+}
+.guide-offroute summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 4px 0;
+}
+.guide-offroute[open] summary { margin-bottom: 8px; }
+.guide-offroute .guide-spot { opacity: 0.9; }
+
 /* メモ・候補地 */
 .shared-memo-textarea {
   width: 100%;

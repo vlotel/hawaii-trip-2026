@@ -58,9 +58,6 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
     document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(btn.dataset.tab).classList.add("active");
-    if (btn.dataset.tab === "drive" && driveMap) {
-      setTimeout(() => driveMap.invalidateSize(), 0);
-    }
   });
 });
 
@@ -492,13 +489,14 @@ function initPackingAddForm() {
   refreshCategories();
 }
 
-// ---------- ドライブ ----------
-function googleMapsUrl(name) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + " Oahu Hawaii")}`;
-}
+// ---------- ドライブ: 立ち寄りスポットガイド ----------
+// 地図(Leaflet)は廃止。ルート順のリスト＋Googleマップリンクだけのシンプルな作りにした。
 
-function getDriveState(id) {
-  return state.drive[id] || { selected: false, memo: "" };
+// Googleマップ検索URL(表示名の「★…」や「(記録用)」を除いてから検索する)
+function mapsUrl(spot) {
+  const name = spot.name.replace(/★.*$/, "").replace(/[（(]記録用[）)]/g, "").trim();
+  const hint = /ハレイワ|カフク|ノースショア/.test(spot.area) ? "North Shore Oahu Hawaii" : "Oahu Hawaii";
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + " " + hint)}`;
 }
 
 // スポットのカテゴリ情報(未定義カテゴリでも落ちないようフォールバック)
@@ -506,302 +504,62 @@ function driveCat(spot) {
   return DRIVE_CATEGORIES[spot.cat] || { label: "その他", emoji: "📍", color: "#64748b" };
 }
 
-function driveCatBadge(spot) {
+// 説明の最初の1文だけ返す(周辺スポットは短く見せる)
+function firstSentence(text) {
+  const t = String(text).replace(/^★[^。]*。\s*/, ""); // 先頭の「★…。」注記は落とす
+  const i = t.indexOf("。");
+  return i >= 0 ? t.slice(0, i + 1) : t;
+}
+
+// スポット1件。plan=行きたいところ(★・説明は全文)、それ以外は周辺候補(説明は1文)
+function driveSpotHtml(spot) {
   const c = driveCat(spot);
-  return `<span class="drive-cat-badge" style="--cat-color:${c.color}">${c.emoji} ${c.label}</span>`;
-}
-
-function setDriveState(id, field, value) {
-  state.drive[id] = state.drive[id] || { selected: false, memo: "" };
-  state.drive[id][field] = value;
-  saveState(state);
-  renderDrive();
-}
-
-let driveMap = null;
-let driveLayers = [];
-let driveEditMode = false;
-let driveCatFilter = null; // カテゴリ絞り込み(null=すべて。永続化しない一時状態)
-
-// 非表示にした候補を除いた、表示対象のドライブ候補
-function activeDriveSpots() {
-  return DRIVE_SPOTS.filter((s) => !state.driveDeleted.includes(s.id));
-}
-
-// 2点間の距離(km) — ハバーサイン公式
-function haversineKm(a, b) {
-  const R = 6371;
-  const toRad = (d) => (d * Math.PI) / 180;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const lat1 = toRad(a.lat);
-  const lat2 = toRad(b.lat);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-function renderDriveMap() {
-  if (!driveMap) {
-    driveMap = L.map("drive-map").setView([21.45, -157.95], 10);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 18,
-    }).addTo(driveMap);
-  }
-
-  // 既存レイヤー(マーカー・ルート線)をクリア
-  driveLayers.forEach((m) => driveMap.removeLayer(m));
-  driveLayers = [];
-
-  // DRIVE_SPOTS は時計回り順に並んでいるので、その順を訪問順とする(非表示候補は除く)
-  const selectedSpots = activeDriveSpots().filter((s) => getDriveState(s.id).selected);
-
-  // ルート線: ホテル → 選択スポット(順) → ホテル
-  if (selectedSpots.length) {
-    const routePoints = [
-      [DRIVE_START.lat, DRIVE_START.lng],
-      ...selectedSpots.map((s) => [s.lat, s.lng]),
-      [DRIVE_START.lat, DRIVE_START.lng],
-    ];
-    const line = L.polyline(routePoints, {
-      color: "#f97316",
-      weight: 3,
-      opacity: 0.7,
-      dashArray: "6 6",
-    }).addTo(driveMap);
-    driveLayers.push(line);
-  }
-
-  // 起点(ホテル)マーカー
-  const startIcon = L.divIcon({
-    className: "drive-start-icon",
-    html: "🏨",
-    iconSize: [24, 24],
-  });
-  const startMarker = L.marker([DRIVE_START.lat, DRIVE_START.lng], { icon: startIcon }).addTo(driveMap);
-  startMarker.bindPopup(`<div class="drive-popup"><h4>${DRIVE_START.name}</h4><p class="muted">ドライブの起点・終点</p></div>`);
-  driveLayers.push(startMarker);
-
-  // 各スポットのマーカー(選択中は訪問順の番号付き、未選択はカテゴリ色の点)
-  // カテゴリ絞り込み中は、選択済みを除き対象カテゴリ以外を地図からも隠す
-  activeDriveSpots().forEach((spot) => {
-    const ds = getDriveState(spot.id);
-    if (driveCatFilter && spot.cat !== driveCatFilter && !ds.selected) return;
-    const order = ds.selected ? selectedSpots.indexOf(spot) + 1 : null;
-    const icon = L.divIcon({
-      className: `drive-marker-icon ${ds.selected ? "selected" : `cat-${spot.cat}`}`,
-      html: order ? `<span>${order}</span>` : "",
-      iconSize: ds.selected ? [24, 24] : [14, 14],
-    });
-    const marker = L.marker([spot.lat, spot.lng], { icon }).addTo(driveMap);
-    marker.spotId = spot.id;
-    marker.bindPopup(`
-      <div class="drive-popup">
-        <h4>${order ? order + ". " : ""}${spot.name}</h4>
-        <p class="muted">${driveCat(spot).emoji} ${driveCat(spot).label} ／ ${spot.area}</p>
-        <p>${spot.desc}</p>
-        <button class="popup-toggle ${ds.selected ? "on" : ""}" onclick="toggleDriveSpot('${spot.id}')">
-          ${ds.selected ? "✓ 行く(選択中)" : "+ 行くに追加"}
-        </button>
-        <a href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
-        <p class="muted">滞在目安 ${spot.stayMin ?? 40}分</p>
+  const isPlan = !!spot.plan;
+  const desc = isPlan ? spot.desc : firstSentence(spot.desc);
+  return `
+    <div class="guide-spot${isPlan ? " is-plan" : ""}">
+      <div class="guide-spot-head">
+        <span class="guide-cat" title="${c.label}">${c.emoji}</span>
+        <h4 class="guide-name">${isPlan ? '<span class="guide-star">★</span> ' : ""}${spot.name}</h4>
+        <a class="guide-maps" href="${mapsUrl(spot)}" target="_blank" rel="noopener">📍 地図</a>
       </div>
-    `);
-    driveLayers.push(marker);
-  });
-
-  // 概算ドライブ情報の表示
-  renderDriveSummaryBar(selectedSpots);
-}
-
-// 地図下のドライブ概算バー(距離・時間の目安)
-function renderDriveSummaryBar(selectedSpots) {
-  const el = document.getElementById("drive-map-summary");
-  if (!el) return;
-  if (!selectedSpots.length) {
-    el.innerHTML = `<span class="muted">スポットを「行く」に追加すると、ホテルを起点にしたおおよそのルートと走行距離の目安を表示します。</span>`;
-    return;
-  }
-  // ホテル → 各スポット → ホテル の直線距離合計
-  const points = [DRIVE_START, ...selectedSpots, DRIVE_START];
-  let km = 0;
-  for (let i = 0; i < points.length - 1; i++) {
-    km += haversineKm(points[i], points[i + 1]);
-  }
-  // 直線距離→実走行距離は1.3倍程度、平均速度45km/hで概算。滞在時間は各スポットの stayMin を合計
-  const roadKm = km * 1.3;
-  const driveMin = (roadKm / 45) * 60;
-  const stopMin = selectedSpots.reduce((sum, spot) => sum + (spot.stayMin ?? 40), 0);
-  const totalMin = driveMin + stopMin;
-  const fmt = (m) => `${Math.floor(m / 60)}時間${Math.round(m % 60)}分`;
-  el.innerHTML = `
-    <strong>選択中 ${selectedSpots.length}箇所</strong>
-    ／ ルート概算 約${Math.round(roadKm)}km
-    ／ 運転 約${fmt(driveMin)}
-    ＋ 各所滞在 約${fmt(stopMin)}
-    = <strong>合計 約${fmt(totalMin)}</strong>
-    <span class="muted">(直線距離からの粗い目安。滞在時間は各スポットごとの目安値を合計)</span>
+      <p class="guide-desc${isPlan ? "" : " muted"}">${desc}</p>
+    </div>
   `;
 }
 
-// 地図のポップアップから「行く」を切り替える(グローバル公開)
-function toggleDriveSpot(id) {
-  const ds = getDriveState(id);
-  setDriveState(id, "selected", !ds.selected); // → renderDrive() → renderDriveMap() で再描画
-  // 再描画でマーカーが作り直されるため、同じスポットのポップアップを開き直す
-  const marker = driveLayers.find((m) => m.spotId === id);
-  if (marker) marker.openPopup();
-}
-window.toggleDriveSpot = toggleDriveSpot;
-
-// カテゴリ絞り込みチップ(凡例を兼ねる)
-function renderDriveCatFilter() {
-  const el = document.getElementById("drive-cat-filter");
-  if (!el) return;
-  const counts = {};
-  activeDriveSpots().forEach((s) => { counts[s.cat] = (counts[s.cat] || 0) + 1; });
-  // 絞り込み中カテゴリの候補が全て非表示になったら、不可視のままフィルタが残らないよう解除
-  if (driveCatFilter && !counts[driveCatFilter]) driveCatFilter = null;
-  // 「すべて」チップは固定の濃色を指定(未指定だとダークテーマで --primary が明色になり白文字が読めない)
-  let html = `<button class="drive-cat-chip ${driveCatFilter === null ? "active" : ""}" data-cat="" style="--cat-color:#0f766e">すべて</button>`;
-  Object.entries(DRIVE_CATEGORIES).forEach(([key, c]) => {
-    if (!counts[key]) return;
-    html += `<button class="drive-cat-chip ${driveCatFilter === key ? "active" : ""}" data-cat="${key}" style="--cat-color:${c.color}">${c.emoji} ${c.label} <span class="chip-count">${counts[key]}</span></button>`;
-  });
-  el.innerHTML = html;
-  el.querySelectorAll(".drive-cat-chip").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const cat = btn.dataset.cat || null;
-      driveCatFilter = (cat === null || driveCatFilter === cat) ? null : cat;
-      renderDrive();
-    });
-  });
-}
-
 function renderDrive() {
-  const filterOnly = document.getElementById("drive-filter").checked;
-  renderDriveCatFilter();
-
-  // 編集モードのボタン表示を更新
-  const modeBtn = document.getElementById("drive-edit-mode-btn");
-  if (modeBtn) {
-    modeBtn.textContent = driveEditMode ? "完了" : "編集";
-    modeBtn.classList.toggle("active", driveEditMode);
-  }
-
-  renderDriveMap();
-
-  const spots = activeDriveSpots();
-
-  // 選択中のスポットまとめ
-  const selectedSpots = spots.filter((s) => getDriveState(s.id).selected);
-  const selectedCard = document.getElementById("drive-selected");
-  const selectedList = document.getElementById("drive-selected-list");
-  if (selectedSpots.length) {
-    selectedCard.style.display = "";
-    selectedList.innerHTML = selectedSpots.map((s) => `<li>${driveCat(s).emoji} ${s.name}<span class="muted">(${s.area})</span></li>`).join("");
-  } else {
-    selectedCard.style.display = "none";
-  }
-
-  // スポット一覧(「選択中のみ」とカテゴリ絞り込みの両方を適用)
   const el = document.getElementById("drive-list");
-  el.classList.toggle("edit-mode", driveEditMode);
-  let spotsToShow = filterOnly ? selectedSpots : spots;
-  if (driveCatFilter) spotsToShow = spotsToShow.filter((s) => s.cat === driveCatFilter);
+  if (!el) return;
+
+  // DRIVE_SPOTS は訪問順。ルート上(①〜⑤)と「ルート外/ワイキキ周辺」に振り分ける
+  const areaOrder = [];
+  const byArea = new Map();
+  const offRoute = [];
+  DRIVE_SPOTS.forEach((spot) => {
+    if (/ルート外|ワイキキ周辺/.test(spot.area)) { offRoute.push(spot); return; }
+    if (!byArea.has(spot.area)) { byArea.set(spot.area, []); areaOrder.push(spot.area); }
+    byArea.get(spot.area).push(spot);
+  });
 
   let html = "";
-  let lastArea = null;
-  spotsToShow.forEach((spot) => {
-    const ds = getDriveState(spot.id);
-    if (spot.area !== lastArea) {
-      html += `<h3 class="drive-area-heading">${spot.area}</h3>`;
-      lastArea = spot.area;
-    }
-    html += `
-      <div class="drive-spot ${ds.selected ? "selected" : ""}">
-        <div class="drive-spot-header">
-          <label class="drive-checkbox">
-            <input type="checkbox" data-id="${spot.id}" data-field="selected" ${ds.selected ? "checked" : ""}>
-            行く
-          </label>
-          <h3>${spot.name}</h3>
-          <button class="drive-delete" data-id="${spot.id}" aria-label="この候補を削除">✕</button>
-        </div>
-        <div class="drive-spot-meta">
-          ${driveCatBadge(spot)}
-          <span class="muted drive-staymin">滞在目安 ${spot.stayMin ?? 40}分</span>
-          <a class="maps-link" href="${googleMapsUrl(spot.name)}" target="_blank" rel="noopener">Google Mapsで見る</a>
-        </div>
-        <p class="drive-desc">${spot.desc}</p>
-        <textarea class="drive-memo" data-id="${spot.id}" data-field="memo" placeholder="メモ(訪問順・営業時間・予約状況など)">${ds.memo}</textarea>
-      </div>
-    `;
+  areaOrder.forEach((area) => {
+    html += `<h3 class="guide-area">${area}</h3>`;
+    html += byArea.get(area).map(driveSpotHtml).join("");
   });
 
-  if (spotsToShow.length === 0) {
-    html = filterOnly && !selectedSpots.length
-      ? `<p class="muted">まだ「行く」を選択したスポットがありません。</p>`
-      : `<p class="muted">この条件に合うスポットがありません。</p>`;
-  }
-
-  // 編集モード時、非表示にした候補を戻せるようにする
-  if (driveEditMode) {
-    const deletedSpots = DRIVE_SPOTS.filter((s) => state.driveDeleted.includes(s.id));
-    if (deletedSpots.length) {
-      html += `
-        <div class="drive-restore">
-          <span class="muted">非表示にした候補(${deletedSpots.length}件):</span>
-          ${deletedSpots.map((s) => `<button class="drive-restore-btn" data-id="${s.id}">↩ ${s.name}</button>`).join("")}
-        </div>
-      `;
-    }
+  // 今回は通らない候補は折りたたみで記録として残す
+  if (offRoute.length) {
+    html += `
+      <details class="guide-offroute">
+        <summary>その他の候補(今回は通らない・記録用 ${offRoute.length}件)</summary>
+        ${offRoute.map(driveSpotHtml).join("")}
+      </details>
+    `;
   }
 
   el.innerHTML = html;
-
-  el.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-    cb.addEventListener("change", (e) => {
-      setDriveState(e.target.dataset.id, e.target.dataset.field, e.target.checked);
-    });
-  });
-
-  el.querySelectorAll("textarea").forEach((ta) => {
-    ta.addEventListener("input", (e) => {
-      setDriveState(e.target.dataset.id, e.target.dataset.field, e.target.value);
-    });
-  });
-
-  // 候補の削除(既定候補は driveDeleted に記録して非表示にする)
-  el.querySelectorAll(".drive-delete").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const id = e.currentTarget.dataset.id;
-      if (!state.driveDeleted.includes(id)) state.driveDeleted.push(id);
-      delete state.drive[id];
-      saveState(state);
-      renderDrive();
-    });
-  });
-
-  // 候補の復元
-  el.querySelectorAll(".drive-restore-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const id = e.currentTarget.dataset.id;
-      state.driveDeleted = state.driveDeleted.filter((x) => x !== id);
-      saveState(state);
-      renderDrive();
-    });
-  });
 }
-
-document.getElementById("drive-filter").addEventListener("change", renderDrive);
-
-document.getElementById("drive-edit-mode-btn").addEventListener("click", () => {
-  driveEditMode = !driveEditMode;
-  renderDrive();
-});
 
 // ---------- 共有メモ ----------
 // 値は state から反映するが、入力中(フォーカス中)の上書きは避ける(textareaを再生成しないため
@@ -944,8 +702,6 @@ function applyTheme(theme) {
   document.body.classList.toggle("dark", theme === "dark");
   const btn = document.getElementById("theme-toggle");
   if (btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
-  // 地図のタイル色味はそのままだが、再描画時のサイズ補正のため
-  if (driveMap) setTimeout(() => driveMap.invalidateSize(), 0);
 }
 
 (function initTheme() {

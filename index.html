@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ハワイ社員旅行 2026.09</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -55,27 +54,13 @@
 
   <!-- ドライブ -->
   <section id="drive" class="tab-panel">
-    <div class="card">
-      <div class="drive-header">
-        <h2>3日目: オアフ島ドライブ 立ち寄り候補</h2>
-        <button id="drive-edit-mode-btn" class="packing-mode-btn">編集</button>
-      </div>
-      <p class="muted">ルートは<strong>プラン4(逆回り一周)</strong>で確定。7:00出発 → YogurStory朝食 → ノースショア(ハレイワ) → 帰りにウィンドワード海沿い → 15:00返却です。下のリストは<strong>①〜⑤の訪問順</strong>に並んでいて、道中のおすすめ候補も追加してあります。気になる場所を「行く」にチェックすると「選択中のスポット」にまとまります。カテゴリ(🏖️ビーチ・🍽️グルメなど)のボタンで絞り込みもできます。「ルート外」は今回は通らない候補の記録です。</p>
-      <p class="muted">「編集」を押すと各候補に削除(✕)ボタンが表示され、不要な候補を非表示にできます。非表示にした候補は同じ画面から元に戻せます。</p>
-      <div class="drive-controls">
-        <div id="drive-cat-filter" class="drive-cat-filter"></div>
-        <label><input type="checkbox" id="drive-filter"> 選択中のスポットのみ表示</label>
-      </div>
-    </div>
     <div id="drive-plan" class="card"></div>
     <div id="rental-car" class="card"></div>
-    <div id="drive-selected" class="card" style="display:none;">
-      <h2>選択中のスポット(訪問順メモ)</h2>
-      <ol id="drive-selected-list"></ol>
+    <div class="card">
+      <h2>📍 3日目 立ち寄りスポット</h2>
+      <p class="muted">ルート順(① 朝食 → ② 行き道 → ③ ハレイワ → ④ 海沿い → ⑤ 帰り道)で並べています。<strong>★＝行きたいところ(確定)</strong>、そのほかは周辺のおすすめです。各スポットの「📍 地図」ボタンからGoogleマップを開けます。</p>
+      <div id="drive-list" class="guide-list"></div>
     </div>
-    <div id="drive-map"></div>
-    <div id="drive-map-summary" class="drive-map-summary"></div>
-    <div id="drive-list"></div>
   </section>
 
   <!-- メモ・候補地 -->
@@ -115,7 +100,6 @@
   <button class="tab-btn" data-tab="notes">メモ</button>
 </nav>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script src="data.js"></script>
 <script type="module" src="app.js"></script>
