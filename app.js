@@ -692,6 +692,82 @@ function renderSpots() {
   `).join("");
 }
 
+// ---------- 集合場所・緊急連絡先(静的) ----------
+function renderContacts() {
+  const el = document.getElementById("contact-info");
+  if (!el) return;
+  const c = CONTACTS;
+  el.innerHTML = `
+    <div class="contact-emergency">
+      <div class="contact-emergency-label">${c.emergency.label}</div>
+      <div class="contact-emergency-name">${c.emergency.name}</div>
+      <a class="contact-tel" href="tel:${c.emergency.tel.replace(/-/g, "")}">${c.emergency.tel}</a>
+      <p class="muted">${c.emergency.note}</p>
+    </div>
+    <h3>集合のご案内</h3>
+    ${c.meetings.map((m) => `
+      <div class="contact-block">
+        <h4>${m.group} <span class="muted">${m.date}</span></h4>
+        <ul class="rental-list">${m.body.map((t) => `<li>${t}</li>`).join("")}</ul>
+      </div>
+    `).join("")}
+    <h3>現地ホテル</h3>
+    <div class="contact-block">
+      <div>${c.hotel.name}</div>
+      <div class="muted">${c.hotel.address}(${c.hotel.stay})</div>
+      <a class="contact-tel" href="tel:${c.hotel.tel.replace(/[-()]/g, "")}">${c.hotel.tel}</a>
+    </div>
+    <h3>現地代理店</h3>
+    <div class="contact-block">
+      <div>${c.localAgent.name}</div>
+      <div class="muted">${c.localAgent.address}</div>
+    </div>
+  `;
+}
+
+// ---------- 加入中の海外旅行保険(たびほ・静的) ----------
+function renderTabiho() {
+  const el = document.getElementById("tabiho-info");
+  if (!el) return;
+  const t = TABIHO_INSURANCE;
+  el.innerHTML = `
+    <div class="insurance-card">
+      <h3>${t.title} <span class="insurance-attach">${t.status}</span></h3>
+      <p class="muted">${t.summary}</p>
+      <table class="insurance-table">
+        <tbody>${t.rows.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</tbody>
+      </table>
+      <ul class="rental-list muted">${t.notes.map((n) => `<li>${n}</li>`).join("")}</ul>
+    </div>
+  `;
+}
+
+// ---------- 手荷物ルール(静的) ----------
+function renderBaggage() {
+  const el = document.getElementById("baggage-info");
+  if (!el) return;
+  const block = (b) => `
+    <h3>${b.title}</h3>
+    <table class="insurance-table">
+      <tbody>${b.rows.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</tbody>
+    </table>
+    <ul class="rental-list muted">${b.notes.map((n) => `<li>${n}</li>`).join("")}</ul>
+  `;
+  el.innerHTML = block(BAGGAGE_INFO.checked) + block(BAGGAGE_INFO.carryOn);
+}
+
+// ---------- 渡航・滞在中の注意事項(静的) ----------
+function renderTravelNotes() {
+  const el = document.getElementById("travel-notes");
+  if (!el) return;
+  el.innerHTML = TRAVEL_NOTES.map((sec) => `
+    <div class="contact-block">
+      <h4>${sec.title}</h4>
+      <ul class="rental-list">${sec.items.map((t) => `<li>${t}</li>`).join("")}</ul>
+    </div>
+  `).join("");
+}
+
 function renderSources() {
   const el = document.getElementById("sources-list");
   el.innerHTML = SOURCES.map((s) => `<li>${s}</li>`).join("");
@@ -754,6 +830,10 @@ function renderAll() {
 renderAll();
 renderDrivePlan();
 renderRentalCar();
+renderContacts();
+renderTabiho();
+renderBaggage();
+renderTravelNotes();
 initPackingAddForm();
 initSharedMemo();
 

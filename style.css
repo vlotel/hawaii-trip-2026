@@ -1177,3 +1177,36 @@ table th {
   font-size: 0.78rem;
   margin-top: 10px;
 }
+
+/* 集合場所・緊急連絡先 / 注意事項ブロック */
+.contact-emergency {
+  background: var(--card-alt, rgba(13, 148, 136, 0.08));
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.contact-emergency-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+}
+.contact-emergency-name { margin-top: 2px; font-weight: 600; }
+.contact-tel {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+.contact-tel:hover { text-decoration: underline; }
+.contact-block { margin: 10px 0 16px; }
+.contact-block h4 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.contact-block h4 .muted { font-weight: 400; font-size: 0.82rem; margin-left: 6px; }
