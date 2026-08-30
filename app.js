@@ -757,6 +757,14 @@ function renderTrolley() {
         <tbody>${t.fareRows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
       </table>
       <p class="muted">${t.fareNote}</p>
+      <h4>${t.useTitle}</h4>
+      <div class="table-scroll">
+        <table class="insurance-table">
+          <thead><tr>${t.useHeader.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+          <tbody>${t.useRows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table>
+      </div>
+      <p class="muted">${t.useNote}</p>
       <h4>停留所と始発・終発</h4>
       <div class="table-scroll">
         <table class="insurance-table">
