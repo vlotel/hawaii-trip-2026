@@ -1210,3 +1210,13 @@ table th {
   font-weight: 700;
 }
 .contact-block h4 .muted { font-weight: 400; font-size: 0.82rem; margin-left: 6px; }
+
+/* トロリー時刻表など横に広い表 */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.insurance-card h4 {
+  margin: 14px 0 6px;
+  font-size: 0.95rem;
+}

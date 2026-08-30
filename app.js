@@ -742,6 +742,33 @@ function renderTabiho() {
   `;
 }
 
+// ---------- ワイキキトロリー ピンクライン(静的) ----------
+function renderTrolley() {
+  const el = document.getElementById("trolley-info");
+  if (!el) return;
+  const t = TROLLEY;
+  el.innerHTML = `
+    <div class="insurance-card">
+      <h3>${t.title} <span class="insurance-attach">${t.status}</span></h3>
+      <p class="muted">${t.summary}</p>
+      <h4>料金</h4>
+      <table class="insurance-table">
+        <thead><tr>${t.fareHeader.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>${t.fareRows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table>
+      <p class="muted">${t.fareNote}</p>
+      <h4>停留所と始発・終発</h4>
+      <div class="table-scroll">
+        <table class="insurance-table">
+          <thead><tr>${t.stopHeader.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+          <tbody>${t.stops.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table>
+      </div>
+      <ul class="rental-list muted">${t.notes.map((n) => `<li>${n}</li>`).join("")}</ul>
+    </div>
+  `;
+}
+
 // ---------- 手荷物ルール(静的) ----------
 function renderBaggage() {
   const el = document.getElementById("baggage-info");
@@ -834,6 +861,7 @@ renderContacts();
 renderTabiho();
 renderBaggage();
 renderTravelNotes();
+renderTrolley();
 initPackingAddForm();
 initSharedMemo();
 
