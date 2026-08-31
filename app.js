@@ -711,6 +711,10 @@ function renderContacts() {
         <ul class="rental-list">${m.body.map((t) => `<li>${t}</li>`).join("")}</ul>
       </div>
     `).join("")}
+    <h3>${c.staff.title}</h3>
+    <div class="contact-block">
+      <ul class="rental-list">${c.staff.body.map((t) => `<li>${t}</li>`).join("")}</ul>
+    </div>
     <h3>現地ホテル</h3>
     <div class="contact-block">
       <div>${c.hotel.name}</div>
