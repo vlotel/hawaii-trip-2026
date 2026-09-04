@@ -86,9 +86,57 @@ function statusClass(status) {
   return "";
 }
 
+// 行程表の日別タブ。null = 全日程
+let selectedItinDay = null;
+let itinDayInitialized = false;
+
+// 旅行期間中はその日を、期間外は1日目を初期表示する
+function defaultItinDay() {
+  const d = new Date();
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const map = {
+    "2026-09-07": 1, "2026-09-08": 2, "2026-09-09": 3, "2026-09-10": 4, "2026-09-11": 5,
+  };
+  return map[key] || 1;
+}
+
+function todayItinDay() {
+  const d = new Date();
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const map = {
+    "2026-09-07": 1, "2026-09-08": 2, "2026-09-09": 3, "2026-09-10": 4, "2026-09-11": 5,
+  };
+  return map[key] || null;
+}
+
+function renderDayTabs() {
+  const el = document.getElementById("day-tabs");
+  if (!el) return;
+  const today = todayItinDay();
+  const chips = ITINERARY.map((day) => {
+    const active = selectedItinDay === day.day ? " active" : "";
+    const isToday = today === day.day ? " today" : "";
+    const label = day.date.replace(/\(.+\)/, "");
+    return `<button class="day-chip${active}${isToday}" data-day="${day.day}">${day.day}日目<span class="day-chip-date">${label}</span></button>`;
+  }).join("");
+  const allActive = selectedItinDay === null ? " active" : "";
+  el.innerHTML = chips + `<button class="day-chip${allActive}" data-day="all">全日程</button>`;
+  el.querySelectorAll(".day-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const v = btn.dataset.day;
+      selectedItinDay = v === "all" ? null : Number(v);
+      renderDayTabs();
+      renderItinerary();
+      const list = document.getElementById("itinerary-list");
+      if (list) list.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  });
+}
+
 function renderItinerary() {
   const el = document.getElementById("itinerary-list");
-  el.innerHTML = ITINERARY.map((day) => {
+  const days = selectedItinDay === null ? ITINERARY : ITINERARY.filter((d) => d.day === selectedItinDay);
+  el.innerHTML = days.map((day) => {
     let tableHtml = "";
     if (day.items && day.items.length) {
       tableHtml = `
@@ -854,6 +902,8 @@ function applyTheme(theme) {
 function renderAll() {
   renderNextEvent();
   renderOverview();
+  if (selectedItinDay === null && !itinDayInitialized) { selectedItinDay = defaultItinDay(); itinDayInitialized = true; }
+  renderDayTabs();
   renderItinerary();
   renderSummary();
   renderPacking();

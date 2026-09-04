@@ -1220,3 +1220,51 @@ table th {
   margin: 14px 0 6px;
   font-size: 0.95rem;
 }
+
+/* 行程表の日別タブ */
+.day-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 -12px 10px;
+  padding: 8px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.day-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 0.86rem;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.day-chip .day-chip-date {
+  font-size: 0.74rem;
+  font-weight: normal;
+  opacity: 0.72;
+}
+
+.day-chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.day-chip.active .day-chip-date { opacity: 0.9; }
+
+.day-chip.today:not(.active) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
